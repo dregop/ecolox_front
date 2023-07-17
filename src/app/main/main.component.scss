@@ -1,0 +1,9 @@
+.line {                         
+    fill: none;                 
+    stroke: url(#line-gradient);    
+    stroke-width: 2px;          
+}
+
+#zoom, #chart {
+    float: left;
+}

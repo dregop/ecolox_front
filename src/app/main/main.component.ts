@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 export  class MarketPrice {
   co2!: number;
   date!: any;
+  origin?: string;
 }
 
 @Component({
@@ -16,23 +17,27 @@ export class MainComponent implements OnInit {
 
   parseDate = d3.timeParse('%d-%m-%Y');
 
-  @Input() marketStatus!: MarketPrice[];
+  @Input() dataTotalCo2!: MarketPrice[];
+  splittedByCategData!: any[];
 
-  private svgElement!: HTMLElement;
   private chartProps: any;
 
   formatDate() {
-    this.marketStatus.forEach(ms => {
+    this.dataTotalCo2.forEach(ms => {
       if (typeof ms.date === 'string') {
         ms.date = this.parseDate(ms.date);
       }
     });
   }
-  private extensionData!: any;
+  private listOriginByBytes!: any;
+  private currentOrigin!: string;
+  private selectedColor!: string;
+  private listColors = ['green', 'orange', 'red', 'yellow'];
   private totalCo2: number = 0;
   private defaultLocation = 'regionOther';
   private userLocation = this.defaultLocation;
   public duration: number = 0;
+  public fakeDuration!: Date;
   
   private defaultCarbonIntensityFactorIngCO2PerKWh = 519;
   private kWhPerByteDataCenter = 0.000000000072;
@@ -58,15 +63,14 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     window.addEventListener('duration', (e: any) => {
       this.duration = e.detail;
-      console.log(e.detail);
     });   
     window.addEventListener('co2', (e: any) => {
-      this.extensionData = e.detail;
-      console.log(e.detail);
+      this.listOriginByBytes = e.detail.stats;
+      this.currentOrigin = e.detail.origin;
       this.showStats();
-      if (this.marketStatus &&  this.chartProps) {
+      if (this.dataTotalCo2 &&  this.chartProps) {
         this.updateChart();
-      } else if (this.marketStatus) {
+      } else if (this.dataTotalCo2) {
         this.buildChart();
       }
 
@@ -77,12 +81,8 @@ export class MainComponent implements OnInit {
     });
   }
 
-  ngOnChanges() {
-    console.log('on change');
-  }
-
   private getStats = () => {
-    const stats = this.extensionData;
+    const stats = this.listOriginByBytes;
     let total = 0;
     const sortedStats = [];
   
@@ -125,13 +125,6 @@ export class MainComponent implements OnInit {
       return;
     }
   
-  
-    for (let index in stats.highestStats) {
-      if (stats.highestStats[index].percent < 1) {
-        continue;
-      }
-    }
-  
     const kWhDataCenterTotal = stats.total * this.kWhPerByteDataCenter;
     const GESDataCenterTotal = kWhDataCenterTotal * this.defaultCarbonIntensityFactorIngCO2PerKWh;
   
@@ -145,8 +138,17 @@ export class MainComponent implements OnInit {
     const gCO2Total = Math.round(GESDataCenterTotal + GESNetworkTotal + GESDeviceTotal);
 
     this.totalCo2 = gCO2Total;
+    const date = new Date;
+      
+    if (this.splittedByCategData && this.splittedByCategData.length > 0) {
+      this.splittedByCategData.push({'date': date, 'co2': this.totalCo2, origin: this.currentOrigin});
+    } else {
+      this.dataTotalCo2.push({'date': date, 'co2': this.totalCo2, origin: this.currentOrigin});
+      console.log('prout');
+    }
 
-    this.marketStatus.push({'date': new Date, 'co2': this.totalCo2});
+    this.fakeDuration = new Date;
+    this.fakeDuration.setMinutes(58);
   
     const kmByCar = Math.round(1000 * gCO2Total / this.GESgCO2ForOneKmByCar) / 1000;
     const chargedSmartphones = Math.round(gCO2Total / this.GESgCO2ForOneChargedSmartphone);
@@ -172,7 +174,8 @@ export class MainComponent implements OnInit {
   
     let _this = this;
     // Define the line
-    var valueline2 = d3.line<MarketPrice>()
+    const valueline2 = d3.line<MarketPrice>()
+      .curve(d3.curveCatmullRom.alpha(0.5)) // add some curves to the line
       .x(function (d) {
         if (d.date instanceof Date) {
           return _this.chartProps.x(d.date.getTime());
@@ -180,7 +183,7 @@ export class MainComponent implements OnInit {
       })
       .y(function (d) { return _this.chartProps.y(d.co2); });
   
-    var svg = d3.select(this.chartElement.nativeElement)
+    const svg = d3.select(this.chartElement.nativeElement)
       .append('svg')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
@@ -189,7 +192,7 @@ export class MainComponent implements OnInit {
   
     // Scale the range of the data
     this.chartProps.x.domain(
-      d3.extent(_this.marketStatus, (d) => {
+      d3.extent(_this.dataTotalCo2, (d) => {
         if (d.date instanceof Date) {
           return (d.date as Date).getTime();
         }
@@ -197,20 +200,21 @@ export class MainComponent implements OnInit {
           return null;
         }
       }));
-    this.chartProps.y.domain([0, d3.max(this.marketStatus, function (d) {
+    this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) {
       return Math.max(d.co2);
     })]);
+
+    this.selectedColor = this.listColors[Math.trunc(Math.random() * 4)];
   
     // Add the valueline2 path.
     this.linechart = svg.append('path')
       .attr('class', 'line line2')
-      .style('stroke', 'green')
+      .style('stroke', 'blue')
       .style('fill', 'none')
       .style("stroke-width", 2)
       // .style("stroke-dasharray", ("3, 6"))  // <== This line here!!
-      .attr('d', valueline2(_this.marketStatus));
-  
-  
+      .attr('d', valueline2(_this.dataTotalCo2));  
+
     // Add the X Axis
     svg.append('g')
       .attr('class', 'x axis')
@@ -227,6 +231,52 @@ export class MainComponent implements OnInit {
     this.chartProps.valueline2 = valueline2;
     this.chartProps.xAxis = xAxis;
     this.chartProps.yAxis = yAxis;
+
+
+    // add zoom and pan
+    // const zoom = d3.zoom()
+    // .scaleExtent([1, 32])
+    // .extent([[margin.left, 0], [width - margin.right, height]])
+    // .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
+    // .on("zoom", zoomed);
+    // const thus = this;
+    // const gx = svg.append("g")
+    // .call(xAxis, this.chartProps.x);
+    // function zoomed(event: { transform: { rescaleX: (arg0: any) => any; }; }) {
+    //   const xz = event.transform.rescaleX(thus.chartProps.x);
+    //   thus.linechart.attr("d", valueline2(thus.dataTotalCo2));
+    //   gx.call(xAxis, xz);
+    // }
+
+    let zoom:any = d3.zoom()
+    .on('zoom', (event) => {
+      this.chartProps.x
+        .domain(event.transform.rescaleX(this.chartProps.x).domain())
+        .range([0, width].map(d => event.transform.applyX(d))); //
+        
+      // svg.select(".line")
+      //     .attr("d", this.linechart); // zooms line
+  
+          // this.chartProps.x.domain(
+          //   d3.extent(_this.dataTotalCo2, (d) => {
+          //     if (d.date instanceof Date) {
+          //       return (d.date as Date).getTime();
+          //     }
+          //     else {
+          //       return null;
+          //     }
+          //   }));
+          // this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) {
+          //   return Math.max(d.co2);
+          // })]);
+    });
+
+    function handleZoom(e: any) {
+      d3.select('path')
+      .attr('transform', e.transform);
+    }
+
+    d3.select('svg').call(zoom as any);
   }
 
   updateChart() {
@@ -234,33 +284,99 @@ export class MainComponent implements OnInit {
     this.formatDate();
   
     // Scale the range of the data again
-    this.chartProps.x.domain(d3.extent(this.marketStatus, (d) => {
-      if (d.date instanceof Date) {
-        return d.date.getTime();
-      } else  {
-        return null;
+    if (this.splittedByCategData && this.splittedByCategData.length > 0) {
+      let jeanMich: MarketPrice[] = [];
+      this.dataTotalCo2.map( (data: MarketPrice) => {
+        jeanMich.push(data);
+      });
+      this.splittedByCategData.map( (data: MarketPrice) => {
+        jeanMich.push(data);
+      });
+      this.chartProps.x.domain(d3.extent(jeanMich, (d) => {
+        if (d.date instanceof Date) {
+          return d.date.getTime();
+        } else  {
+          return null;
+        }
+      }));
+    
+      this.chartProps.y.domain([0, d3.max(jeanMich, function (d) { return Math.max(d.co2); })]);
+    
+      // Select the section we want to apply our changes to
+      this.chartProps.svg.transition();
+
+      this.chartProps.svg.select('.line.line3') // update the current line
+      .attr('d', this.chartProps.valueline1(this.splittedByCategData));
+
+      console.log(this.dataTotalCo2);
+
+      this.chartProps.svg.select('.line.line2') // update the current line
+      .attr('d', this.chartProps.valueline2(this.dataTotalCo2));
+    } else {
+      this.chartProps.x.domain(d3.extent(this.dataTotalCo2, (d) => {
+        if (d.date instanceof Date) {
+          return d.date.getTime();
+        } else  {
+          return null;
+        }
+      }));
+    
+      this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2); })]);
+    
+      // Select the section we want to apply our changes to
+      this.chartProps.svg.transition();
+      // if (this.currentOrigin && this.dataTotalCo2 && this.currentOrigin === this.dataTotalCo2[this.dataTotalCo2.length - 2].origin) { // si c'est toujours la meme origin
+      if (this.dataTotalCo2 && (this.dataTotalCo2[this.dataTotalCo2.length - 2].date < this.fakeDuration || this.chartProps.valueline1)) {
+          if (this.chartProps.valueline1) {
+            console.log('i update line3');
+            this.chartProps.svg.select('.line.line3') // update the current line
+            .attr('d', this.chartProps.valueline1(this.splittedByCategData));
+          } else {
+            console.log('i update line2');
+            this.chartProps.svg.select('.line.line2') // update the current line
+            .attr('d', this.chartProps.valueline2(this.dataTotalCo2));
+          }
+      } else if (this.dataTotalCo2 && !this.chartProps.valueline1) {
+        console.log('new line3');
+        // Define the line
+  
+        console.log(d3);
+        const valueline1 = d3.line<MarketPrice>()
+        .x(function (d) {
+          if (d.date instanceof Date) {
+            return _this.chartProps.x(d.date.getTime());
+          } 
+        })
+        .y(function (d) { return _this.chartProps.y(d.co2); });
+  
+        this.splittedByCategData = [this.dataTotalCo2[this.dataTotalCo2.length - 1]];
+        this.selectedColor = this.listColors[Math.trunc(Math.random() * 4)];
+  
+        // Add the new path.
+        this.linechart = this.chartProps.svg.append('path')
+          .attr('class', 'line line3')
+          .style('stroke', 'green')
+          .style('fill', 'none')
+          .style("stroke-width", 2)
+          // .style("stroke-dasharray", ("3, 6"))  // <== This line here!!
+          .attr('d', valueline1(_this.splittedByCategData));
+  
+        // Setting the required objects in chartProps so they could be used to update the chart
+        this.chartProps.valueline1 = valueline1;
       }
-    }));
-  
-    this.chartProps.y.domain([0, d3.max(this.marketStatus, function (d) { return Math.max(d.co2); })]);
-  
-    // Select the section we want to apply our changes to
-    this.chartProps.svg.transition();
-  
-    this.chartProps.svg.select('.line.line2') // update the line
-      .attr('d', this.chartProps.valueline2(this.marketStatus));
-  
+    }
+
+    
     this.chartProps.svg.select('.x.axis') // update x axis
       .call(this.chartProps.xAxis);
   
     this.chartProps.svg.select('.y.axis') // update y axis
       .call(this.chartProps.yAxis);
 
+
+    // Add avatar on the lineChart 
     let pos = this.linechart.node().getPointAtLength(this.linechart.node().getTotalLength() - 20);
-    console.log(this.linechart.node().getTotalLength());
-
     d3.select("circle").remove();
-
     this.chartProps.svg
     .append("circle")
     .style("stroke", "gray")
