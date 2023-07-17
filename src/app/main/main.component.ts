@@ -29,6 +29,9 @@ export class MainComponent implements OnInit {
       }
     });
   }
+
+  private zoom!: any;
+
   private listOriginByBytes!: any;
   private currentOrigin!: string;
   private selectedColor!: string;
@@ -77,6 +80,13 @@ export class MainComponent implements OnInit {
       const div = document.getElementById('co2');
       if (div) {
         div.innerHTML = this.totalCo2 as unknown as string;
+      }
+    });
+
+    const zoomButton = document.getElementById('zoomButton');
+    zoomButton?.addEventListener('click', () => {
+      if (this.zoom !== null) {
+        d3.select('svg').call(this.zoom as any);
       }
     });
   }
@@ -182,7 +192,7 @@ export class MainComponent implements OnInit {
         } 
       })
       .y(function (d) { return _this.chartProps.y(d.co2); });
-  
+    
     const svg = d3.select(this.chartElement.nativeElement)
       .append('svg')
       .attr('width', width + margin.left + margin.right)
@@ -200,9 +210,7 @@ export class MainComponent implements OnInit {
           return null;
         }
       }));
-    this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) {
-      return Math.max(d.co2);
-    })]);
+      this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2) + 50; })]);
 
     this.selectedColor = this.listColors[Math.trunc(Math.random() * 4)];
   
@@ -248,12 +256,22 @@ export class MainComponent implements OnInit {
     //   gx.call(xAxis, xz);
     // }
 
-    let zoom:any = d3.zoom()
+    this.zoom = d3.zoom()
     .on('zoom', (event) => {
       this.chartProps.x
         .domain(event.transform.rescaleX(this.chartProps.x).domain())
-        .range([0, width].map(d => event.transform.applyX(d))); //
+        .range([0, width].map(d => event.transform.applyX(d))); // apply zoom for x range
+
+      this.chartProps.y
+        .domain(event.transform.rescaleY(this.chartProps.y).domain())
+        .range([height, 0].map(d => event.transform.applyY(d))); //apply zoom for y range
         
+
+      // svg.select(".x axis")
+      //   .call(d3.axisBottom(xScale)
+      //   .tickSizeOuter(0)); // zooms x axis
+
+
       // svg.select(".line")
       //     .attr("d", this.linechart); // zooms line
   
@@ -269,14 +287,8 @@ export class MainComponent implements OnInit {
           // this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) {
           //   return Math.max(d.co2);
           // })]);
-    });
-
-    function handleZoom(e: any) {
-      d3.select('path')
-      .attr('transform', e.transform);
-    }
-
-    d3.select('svg').call(zoom as any);
+    })
+    .scaleExtent([1, 32]);
   }
 
   updateChart() {
@@ -300,7 +312,7 @@ export class MainComponent implements OnInit {
         }
       }));
     
-      this.chartProps.y.domain([0, d3.max(jeanMich, function (d) { return Math.max(d.co2); })]);
+      this.chartProps.y.domain([this.dataTotalCo2[0], d3.max(jeanMich, function (d) { return Math.max(d.co2) + 50; })]);
     
       // Select the section we want to apply our changes to
       this.chartProps.svg.transition();
@@ -321,7 +333,7 @@ export class MainComponent implements OnInit {
         }
       }));
     
-      this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2); })]);
+      this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2) + 50; })]);
     
       // Select the section we want to apply our changes to
       this.chartProps.svg.transition();
