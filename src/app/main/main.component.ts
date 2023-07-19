@@ -31,6 +31,7 @@ export class MainComponent implements OnInit {
   }
 
   private zoom!: any;
+  private onZoom = false;
 
   private listOriginByBytes!: any;
   private currentOrigin!: string;
@@ -86,7 +87,15 @@ export class MainComponent implements OnInit {
     const zoomButton = document.getElementById('zoomButton');
     zoomButton?.addEventListener('click', () => {
       if (this.zoom !== null) {
-        d3.select('svg').call(this.zoom as any);
+        d3.select('svg').call(this.zoom as any, d3.zoomIdentity);
+        this.onZoom = !this.onZoom; // to disable update when we want to zoom/pan
+      }
+    });
+
+    const resetButton = document.getElementById('reset');
+    resetButton?.addEventListener('click', () => {
+      if (this.zoom !== null) {
+        this.reset();
       }
     });
   }
@@ -152,13 +161,12 @@ export class MainComponent implements OnInit {
       
     if (this.splittedByCategData && this.splittedByCategData.length > 0) {
       this.splittedByCategData.push({'date': date, 'co2': this.totalCo2, origin: this.currentOrigin});
-    } else {
+    } else if (!this.onZoom) {
       this.dataTotalCo2.push({'date': date, 'co2': this.totalCo2, origin: this.currentOrigin});
-      console.log('prout');
     }
 
     this.fakeDuration = new Date;
-    this.fakeDuration.setMinutes(58);
+    this.fakeDuration.setMinutes(55);
   
     const kmByCar = Math.round(1000 * gCO2Total / this.GESgCO2ForOneKmByCar) / 1000;
     const chargedSmartphones = Math.round(gCO2Total / this.GESgCO2ForOneChargedSmartphone);
@@ -185,7 +193,6 @@ export class MainComponent implements OnInit {
     let _this = this;
     // Define the line
     const valueline2 = d3.line<MarketPrice>()
-      .curve(d3.curveCatmullRom.alpha(0.5)) // add some curves to the line
       .x(function (d) {
         if (d.date instanceof Date) {
           return _this.chartProps.x(d.date.getTime());
@@ -210,7 +217,8 @@ export class MainComponent implements OnInit {
           return null;
         }
       }));
-      this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2) + 50; })]);
+      this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2) + 50; })]); // define the range of y axis
+      // i want y axis to start at the first value recorded not zéro so that it is nicer to see
 
     this.selectedColor = this.listColors[Math.trunc(Math.random() * 4)];
   
@@ -240,71 +248,62 @@ export class MainComponent implements OnInit {
     this.chartProps.xAxis = xAxis;
     this.chartProps.yAxis = yAxis;
 
-
-    // add zoom and pan
-    // const zoom = d3.zoom()
-    // .scaleExtent([1, 32])
-    // .extent([[margin.left, 0], [width - margin.right, height]])
-    // .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
-    // .on("zoom", zoomed);
-    // const thus = this;
-    // const gx = svg.append("g")
-    // .call(xAxis, this.chartProps.x);
-    // function zoomed(event: { transform: { rescaleX: (arg0: any) => any; }; }) {
-    //   const xz = event.transform.rescaleX(thus.chartProps.x);
-    //   thus.linechart.attr("d", valueline2(thus.dataTotalCo2));
-    //   gx.call(xAxis, xz);
-    // }
-
     this.zoom = d3.zoom()
+    .extent([[margin.left, 0], [width - margin.right, height]])
+    .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
     .on('zoom', (event) => {
+
       this.chartProps.x
-        .domain(event.transform.rescaleX(this.chartProps.x).domain())
+        .domain(event.transform.rescaleX(this.chartProps.x))
         .range([0, width].map(d => event.transform.applyX(d))); // apply zoom for x range
 
       this.chartProps.y
-        .domain(event.transform.rescaleY(this.chartProps.y).domain())
+        .domain(event.transform.rescaleX(this.chartProps.y))
         .range([height, 0].map(d => event.transform.applyY(d))); //apply zoom for y range
+
+        this.chartProps.x.domain(d3.extent(this.dataTotalCo2, (d) => {
+          if (d.date instanceof Date) {
+            return d.date.getTime();
+          } else  {
+            return null;
+          }
+        }));
+      
+        this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.dataTotalCo2, function (d) { return Math.max(d.co2) + 50; })]);
+
+        this.chartProps.svg.select('.line.line2') // update the current line
+        .attr('d', this.chartProps.valueline2(this.dataTotalCo2));
         
+        this.chartProps.svg.select('.x.axis') // update x axis
+        .call(this.chartProps.xAxis);
+    
+        this.chartProps.svg.select('.y.axis') // update y axis
+        .call(this.chartProps.yAxis);
 
-      // svg.select(".x axis")
-      //   .call(d3.axisBottom(xScale)
-      //   .tickSizeOuter(0)); // zooms x axis
 
-
-      // svg.select(".line")
-      //     .attr("d", this.linechart); // zooms line
-  
-          // this.chartProps.x.domain(
-          //   d3.extent(_this.dataTotalCo2, (d) => {
-          //     if (d.date instanceof Date) {
-          //       return (d.date as Date).getTime();
-          //     }
-          //     else {
-          //       return null;
-          //     }
-          //   }));
-          // this.chartProps.y.domain([0, d3.max(this.dataTotalCo2, function (d) {
-          //   return Math.max(d.co2);
-          // })]);
+      // svg.selectAll('path.line').attr('d', this.linechart); 
     })
-    .scaleExtent([1, 32]);
+    .scaleExtent([1, 25]);
   }
 
   updateChart() {
     let _this = this;
     this.formatDate();
+
+    if (this.onZoom) {
+      return;
+    }
   
     // Scale the range of the data again
     if (this.splittedByCategData && this.splittedByCategData.length > 0) {
-      let jeanMich: MarketPrice[] = [];
+      let fullRange: MarketPrice[] = [];
       this.dataTotalCo2.map( (data: MarketPrice) => {
-        jeanMich.push(data);
+        fullRange.push(data);
       });
       this.splittedByCategData.map( (data: MarketPrice) => {
-        jeanMich.push(data);
+        fullRange.push(data);
       });
-      this.chartProps.x.domain(d3.extent(jeanMich, (d) => {
+      this.chartProps.x.domain(d3.extent(fullRange, (d) => {
         if (d.date instanceof Date) {
           return d.date.getTime();
         } else  {
@@ -312,19 +311,21 @@ export class MainComponent implements OnInit {
         }
       }));
     
-      this.chartProps.y.domain([this.dataTotalCo2[0], d3.max(jeanMich, function (d) { return Math.max(d.co2) + 50; })]);
+      this.chartProps.y.domain([this.dataTotalCo2[0].co2, d3.max(this.splittedByCategData, function (d) { return Math.max(d.co2) + 50; })]);
     
       // Select the section we want to apply our changes to
       this.chartProps.svg.transition();
 
+      console.log('i update line3');
       this.chartProps.svg.select('.line.line3') // update the current line
       .attr('d', this.chartProps.valueline1(this.splittedByCategData));
 
-      console.log(this.dataTotalCo2);
-
+      console.log('i update line2');
       this.chartProps.svg.select('.line.line2') // update the current line
       .attr('d', this.chartProps.valueline2(this.dataTotalCo2));
+
     } else {
+      
       this.chartProps.x.domain(d3.extent(this.dataTotalCo2, (d) => {
         if (d.date instanceof Date) {
           return d.date.getTime();
@@ -361,7 +362,9 @@ export class MainComponent implements OnInit {
         })
         .y(function (d) { return _this.chartProps.y(d.co2); });
   
-        this.splittedByCategData = [this.dataTotalCo2[this.dataTotalCo2.length - 1]];
+        this.splittedByCategData = [this.dataTotalCo2[this.dataTotalCo2.length - 2]];
+        console.log(this.splittedByCategData);
+
         this.selectedColor = this.listColors[Math.trunc(Math.random() * 4)];
   
         // Add the new path.
@@ -371,14 +374,13 @@ export class MainComponent implements OnInit {
           .style('fill', 'none')
           .style("stroke-width", 2)
           // .style("stroke-dasharray", ("3, 6"))  // <== This line here!!
-          .attr('d', valueline1(_this.splittedByCategData));
+          .attr('d', valueline1(this.splittedByCategData));
   
         // Setting the required objects in chartProps so they could be used to update the chart
         this.chartProps.valueline1 = valueline1;
       }
     }
 
-    
     this.chartProps.svg.select('.x.axis') // update x axis
       .call(this.chartProps.xAxis);
   
@@ -404,5 +406,11 @@ export class MainComponent implements OnInit {
     .attr('height', 25)
     .attr('x', pos.x + 7)
     .attr('y', pos.y - 13);
+  }
+
+  private reset() {
+    this.chartProps.svg.transition()
+      .duration(750)
+      .call(this.zoom.transform, d3.zoomIdentity);
   }
 }
