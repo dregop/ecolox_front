@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MarketPrice } from './main/main.component';
+import { Co2ByOriginByTime } from './main/main.component';
 
 @Component({
   selector: 'app-root',
@@ -8,10 +8,10 @@ import { MarketPrice } from './main/main.component';
 })
 export class AppComponent {
   title = 'app';
-  marketStatus!: MarketPrice[];
-  marketStatusToPlot: MarketPrice[] = [];
+  marketStatus!: Co2ByOriginByTime[];
+  marketStatusToPlot: Co2ByOriginByTime[] = [];
 
-  set MarketStatus(status: MarketPrice[]) {
+  set MarketStatus(status: Co2ByOriginByTime[]) {
     this.marketStatus = status;
     this.marketStatusToPlot = this.marketStatus.slice(0, 20);
   }
