@@ -7,3 +7,71 @@
 #zoom, #chart {
     float: left;
 }
+
+#chart {
+    width: 90%;
+    height: 92vh;
+    display: inline-block;
+    border: 1px solid black;
+	vertical-align: middle; 
+	overflow: hidden; 
+}
+
+.y-axis-label {
+    fill: black;
+    font-size: 1.4em;
+    text-anchor: middle;
+    transform: rotate(-90deg);
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    padding: 5em 1em;
+    font-family: sans-serif;
+}
+
+.dotted {
+    stroke: #5c5c5c;
+    stroke-dasharray: 1 1;
+    fill: none;
+}
+
+.tooltip {
+    opacity: 0;
+    position: absolute;
+    top: -14px;
+    left: 0;
+    padding: 0.6em 1em;
+    background: #fff;
+    text-align: center;
+    line-height: 1.4em;
+    font-size: 0.9em;
+    border: 1px solid #ddd;
+    z-index: 10;
+    transition: all 0.1s ease-out;
+    pointer-events: none;
+}
+
+.tooltip:before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    transform: translate(-50%, 50%) rotate(45deg);
+    transform-origin: center center;
+    z-index: 10;
+}
+
+.tooltip-date, .tooltip-Internet {
+    margin-bottom: 0.2em;
+    font-weight: 400;
+    font-size: 1.1em;
+    line-height: 1.4em;
+}

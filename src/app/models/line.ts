@@ -1,8 +1,8 @@
 import * as d3 from "d3";
-import { Co2ByOriginByTime } from "./main.component";
+import { Co2ByOriginByTime } from "../main/main.component";
 
 export class Line {
-    private name: string;
+    public name: string;
     public data: Co2ByOriginByTime[];
     private color: string;
     private category?: string;

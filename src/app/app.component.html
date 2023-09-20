@@ -1,13 +1,35 @@
 <div id="banner">
     <app-banner></app-banner>
+      <ng-container *ngIf="this.currentUser && isAuthenticated">
+        {{ this.currentUser.getName()}}
+        <button (click)="logout()">Deco</button>
+      </ng-container>
 </div>
 <div id="container">
     <div id="menu">
         <app-menu></app-menu>
     </div>
     <div id="main">
-        <app-main></app-main>
+        
+          <ng-container *ngIf="isAuthenticated; else unAuthenticated" >
+            <app-main></app-main>
+          </ng-container>
+
+          <ng-template #unAuthenticated>
+            <h1>Login</h1>
+            <form [formGroup]="loginForm">
+              <input type="email" formControlName="login"/>
+              <input type="password" formControlName="password"/>
+              <button class="button button-primary" (click)="login()">Login</button>
+            </form>
+            <h1>Sign up</h1>
+            <form [formGroup]="signUpForm">
+              <input type="email" formControlName="login" placeholder="username"/>
+              <input type="password" formControlName="password" placeholder="password"/>
+              <input type="password" formControlName="repeat_password" placeholder="repeat password"/>
+              <button class="button button-primary" (click)="signUp()">Sign Up</button>
+            </form>
+          </ng-template>
+          
     </div>
 </div>
-
-<router-outlet></router-outlet>

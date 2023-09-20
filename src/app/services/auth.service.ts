@@ -11,19 +11,18 @@ export class AuthService {
     constructor(private http: HttpClient) {
     }
       
-    login(email:string, password:string ) {
-        return this.http.post<User>(API_URL + '/login', {email, password})
+    login(login:string, password:string ) {
+        return this.http.post<any>(API_URL + '/login', {login, password})
         .pipe(
-            tap(event => this.setSession),
+            tap((res) => this.setSession(res)),
             shareReplay() // prevent multiple http call
-          );
+          );       
     }
 
     private setSession(authResult: { expiresIn: any; idToken: string; }) {
-        const expiresAt = moment().add(authResult.expiresIn,'second');
-
+        console.log('set session');
         localStorage.setItem('id_token', authResult.idToken);
-        localStorage.setItem("expires_at", JSON.stringify(expiresAt.valueOf()) );
+        localStorage.setItem("expires_at", JSON.stringify(moment(authResult.expiresIn).valueOf()) );
     }          
 
     logout() {
@@ -41,18 +40,17 @@ export class AuthService {
 
     getExpiration() {
         const expiration = localStorage.getItem("expires_at");
-        const expiresAt = null;
+        let expiresAt = null;
         if (expiration) {
-            const expiresAt = JSON.parse(expiration);
+            expiresAt = JSON.parse(expiration);
         }
-
         return moment(expiresAt);
     }
 
     signUp(login:string, password:string ) {
-        return this.http.post<User>(API_URL + '/signup', {login, password})
+        return this.http.post<any>(API_URL + '/signup', {login, password})
         .pipe(
-            tap(event => this.setSession),
+            tap((res) => this.setSession(res)),
             shareReplay() // prevent multiple http call
           );
     }

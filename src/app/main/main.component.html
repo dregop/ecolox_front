@@ -1,8 +1,15 @@
-<div style="font-size: 2.0em;">
-    Tu as émis 
-    <span id="co2"></span>g d'équivalent CO² depuis le début de l'analyse
+<div #chart id="chart">
+    <div id="tooltip" class="tooltip">
+        <div class="tooltip-date">
+            <span id="date"></span>
+        </div>
+        <div class="tooltip-Internet">
+            Co2: <span id="internet"></span>
+        </div>
+    </div>
 </div>
-<!-- <div style="text-align: center">Toi aussi installe l'extension pour suivre tes émissions en temps réel ! </div> -->
-<div #chart id="chart"></div>
 <button id="zoomButton">ZOOM</button>
 <button id="reset">RESET</button>
+<button id="day">Last day</button>
+<button id="all">ALL</button>
+
