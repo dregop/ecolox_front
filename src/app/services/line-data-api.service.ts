@@ -17,7 +17,6 @@ export class LineDataApiService {
   }
 
   getData(): Observable<any> {
-    console.log('#get data');
     return this.http
       .get(`${API_URL}/line_chart_data`)
       .pipe(catchError(LineDataApiService._handleError));
@@ -31,5 +30,11 @@ export class LineDataApiService {
   updateData(data: Co2ByOriginByTime[]): Observable<any> {
     return this.http
       .put(`${API_URL}/line_chart_data`, data);
+  }
+
+  getGlobalData(): Observable<any> {
+    return this.http
+      .get(`${API_URL}/line_chart_data/all`)
+      .pipe(catchError(LineDataApiService._handleError));
   }
 }

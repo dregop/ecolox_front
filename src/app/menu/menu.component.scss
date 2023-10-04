@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.btn-menu {
+    @apply rounded-lg border-2 border-amber-200 bg-amber-100 p-2  pl-2 pr-2 mt-4 text-xl font-semibold cursor-default
+}
+
+.deplacement {
+    @apply text-red-500 
+}
+
+.maison {
+    @apply text-yellow-900
+}
+
+.internet {
+    @apply text-blue-700 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 cursor-pointer
+}

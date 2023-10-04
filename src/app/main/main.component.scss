@@ -4,17 +4,11 @@
     stroke-width: 2px;          
 }
 
-#zoom, #chart {
-    float: left;
-}
-
 #chart {
-    width: 90%;
     height: 92vh;
     display: inline-block;
-    border: 1px solid black;
 	vertical-align: middle; 
-	overflow: hidden; 
+	overflow: hidden;
 }
 
 .y-axis-label {
@@ -43,35 +37,24 @@ body {
     top: -14px;
     left: 0;
     padding: 0.6em 1em;
-    background: #fff;
+    background: #d6d3d1;
     text-align: center;
     line-height: 1.4em;
     font-size: 0.9em;
-    border: 1px solid #ddd;
+    box-shadow: 0px 1px 25px #b3b3b2;
     z-index: 10;
     transition: all 0.1s ease-out;
     pointer-events: none;
 }
 
-.tooltip:before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 12px;
-    height: 12px;
-    background: white;
-    border: 1px solid #ddd;
-    border-top-color: transparent;
-    border-left-color: transparent;
-    transform: translate(-50%, 50%) rotate(45deg);
-    transform-origin: center center;
-    z-index: 10;
+.tooltip-origin {
+    word-break: break-all;
 }
 
-.tooltip-date, .tooltip-Internet {
-    margin-bottom: 0.2em;
-    font-weight: 400;
-    font-size: 1.1em;
-    line-height: 1.4em;
+.btn-graph {
+    @apply rounded-lg border-2 border-slate-400 p-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
+}
+
+.activated  {
+    @apply rounded-lg border-2 border-lime-400 p-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
 }

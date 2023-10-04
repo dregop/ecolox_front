@@ -10,7 +10,6 @@ import { ExamsApiService } from './exams/exams-api.service';
 import {ExamFormComponent} from './exams/exam-form.component';
 import {ExamsComponent} from './exams/exams.component';
 import {RouterModule, Routes} from '@angular/router';
-import { AuthModule } from '@auth0/auth0-angular';
 import { UserComponent } from './user/user.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
@@ -39,13 +38,6 @@ const appRoutes: Routes = [
     RouterModule.forRoot(
       appRoutes,
     ),
-    AuthModule.forRoot({
-      domain: 'dev-mjyhd3u2lf0cmzir.eu.auth0.com',
-      clientId: 'tNTicXeutIy4fbVUwtZZiSCSbNfKEqiu',
-      authorizationParams: {
-        redirect_uri: window.location.origin
-      }
-    }),
     FormsModule,
     ReactiveFormsModule
   ],

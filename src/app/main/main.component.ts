@@ -23,7 +23,8 @@ export class MainComponent implements OnInit {
   public dataDrawnCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataSumDbExtensionCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataDbCo2TimeSerie: Co2ByOriginByTime[] = [];
-  private splittedByCategData!: any[];
+  public dataDbCo2TimeSerieFiltered: Co2ByOriginByTime[] = [];
+  private dataGlobalMeanCo2TimeSerie!: Co2ByOriginByTime[];
   private chartProps: any;
   private glines: any;
   private valueslines: Line[] = [];
@@ -35,12 +36,26 @@ export class MainComponent implements OnInit {
   private marginYDomain = 50;
   private tooltip!: any;
   private tooltipCircle!: any;
+  private d3Locale!: d3.TimeLocaleObject;
+  private xz: any;
+  private yz: any;
 
   constructor(private lineDataApi: LineDataApiService) {
   }
 
   ngOnInit(): void {
     let saveData = false;
+
+    this.d3Locale = d3.timeFormatLocale({
+      "dateTime": "%A, %e %B %Y г. %X",
+      "date": "%d.%m.%Y",
+      "time": "%H:%M:%S",
+      "periods": [":00", ":00"],
+      "days": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+      "shortDays": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+      "shortMonths": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jui", "Aoû", "Sep", "Oct", "Nov", "Déc"]
+    });
 
     // Add an event listener that run the function when dimension change
     window.addEventListener('resize', updateOnResize);
@@ -61,7 +76,6 @@ export class MainComponent implements OnInit {
           // _this.chartProps.svgBox
           // .attr('transform', `translate(${_this.chartProps.margin.left},${_this.chartProps.margin.top})`);
         
-          // Update the X scale and Axis (here the 20 is just to have a bit of margin)
           _this.chartProps.x.range([ 0, newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right ]);
           _this.chartProps.y.range([ newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom, 0]);
           _this.chartProps.svgBox.select('.x.axis') // update x axis
@@ -94,8 +108,8 @@ export class MainComponent implements OnInit {
         .getData()
         .subscribe({
           next: (val) => {
-            if (val && val.length > 0) {
-              this.dataDbCo2TimeSerie = JSON.parse(val[val.length - 1].data);
+            if (val && val.data) {
+              this.dataDbCo2TimeSerie = JSON.parse(val.data);
               this.formatDate(this.dataDbCo2TimeSerie);
               console.log('# Database data');
               console.log(this.dataDbCo2TimeSerie);
@@ -129,24 +143,25 @@ export class MainComponent implements OnInit {
             } else {
               dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
             }
-            if (val && val.length === 0) {
+            if (val && val.data) {
+              this.updateData({
+                'category': 'internet',
+                'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
+              });
+            } else {
               this.saveData({
                 'category': 'internet',
                 'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
               });
             }
-            this.updateData({
-              'category': 'internet',
-              'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
-            });
           },
           error: (err) => console.log(err.message)
         });
       }
 
-      const div = document.getElementById('co2');
-      if (div && this.dataExtensionCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 2) {
-        div.innerHTML = this.dataExtensionCo2TimeSerie[this.dataExtensionCo2TimeSerie.length - 2].co2 as unknown as string;
+      const co2_max = document.getElementById('co2_max');
+      if (co2_max && this.dataExtensionCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 2) {
+        co2_max.innerHTML = (this.dataExtensionCo2TimeSerie[this.dataExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + 'g';
       }
 
 
@@ -160,7 +175,16 @@ export class MainComponent implements OnInit {
     const zoomButton = document.getElementById('zoomButton');
     zoomButton?.addEventListener('click', () => {
       if (this.zoom !== null) {
-        d3.select('svg').call(this.zoom as any, d3.zoomIdentity);
+        if (zoomButton.className.includes('activated')) {
+          zoomButton.className = 'btn-graph';
+          zoomButton.title = 'Zoomer';
+          this.reset();
+          this.chartProps.svgBox.on('.zoom', null);
+        } else {
+          zoomButton.title = 'Désactiver le zoom';
+          zoomButton.className = 'activated';
+          this.chartProps.svgBox.call(this.zoom as any, d3.zoomIdentity);
+        }
         this.onZoom = !this.onZoom; // to disable update when we want to zoom/pan
       }
     });
@@ -174,18 +198,26 @@ export class MainComponent implements OnInit {
 
     const lastDayButton = document.getElementById('day');
     lastDayButton?.addEventListener('click', () => {
-      this.dataSumDbExtensionCo2TimeSerie = this.dataSumDbExtensionCo2TimeSerie.filter(d => (new Date(d.date).getDate() === new Date().getDate()));
-      this.updateChart();
+      this.dataDbCo2TimeSerieFiltered = this.dataDbCo2TimeSerie.filter(d => new Date(d.date).getDate() === new Date().getDate());
     });
 
     const allButton = document.getElementById('all');
     allButton?.addEventListener('click', () => {
-      this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-      this.dataExtensionCo2TimeSerie.forEach((entry) => {
-        this.dataSumDbExtensionCo2TimeSerie.push(entry);
-      });
-      this.updateChart();
+      this.dataDbCo2TimeSerieFiltered = [];
     });
+
+    // Get global mean of all users
+    this.lineDataApi
+    .getGlobalData()
+    .subscribe({
+      next: (val) => {
+        if (val && val.data) {
+          this.dataGlobalMeanCo2TimeSerie = JSON.parse(val.data);
+          this.formatDate(this.dataGlobalMeanCo2TimeSerie);
+          console.log('# Get global data');
+          console.log(this.dataGlobalMeanCo2TimeSerie);
+        }
+      }});
   }
 
   private formatDate(data: Co2ByOriginByTime[]) {
@@ -283,9 +315,31 @@ export class MainComponent implements OnInit {
     this.chartProps.x = d3.scaleTime().range([0, width]);
     this.chartProps.y = d3.scaleLinear().range([height, 0]);
 
+    const formatMillisecond = this.d3Locale.format(".%L"),
+    formatSecond = this.d3Locale.format(":%S"),
+    formatMinute = this.d3Locale.format("%H:%M"),
+    formatHour = this.d3Locale.format("%H %p"),
+    formatDay = this.d3Locale.format("%a %d"),
+    formatWeek = this.d3Locale.format("%b %d"),
+    formatMonth = this.d3Locale.format("%B"),
+    formatYear = this.d3Locale.format("%Y");
+
+    function multiFormat(date: any) {
+      if (typeof date === 'string') {
+        date = new Date(date);
+      }
+      return (d3.timeSecond(date) < date ? formatMillisecond
+          : d3.timeMinute(date) < date ? formatSecond
+          : d3.timeHour(date) < date ? formatMinute
+          : d3.timeDay(date) < date ? formatHour
+          : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
+          : d3.timeYear(date) < date ? formatMonth
+          : formatYear)(date);
+    }
+
     // Define the axes
     const xAxis = (g: any, x: any) => g
-    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0));
+    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat));
     var yAxis = (g: any, y: any) => g
     .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0));
   
@@ -315,25 +369,9 @@ export class MainComponent implements OnInit {
       .attr('class', 'y axis')
       .call(yAxis, this.chartProps.y);
 
-    // Add avatar
-    const pos = valueline.selectPath(svgBox).node().getPointAtLength(valueline.selectPath(svgBox).node().getTotalLength());
-    svgBox.append("circle")
-    .style("stroke", "gray")
-    .style("fill", "white")
-    .attr("r", 14)
-    .attr("cx", pos.x+ 20)
-    .attr("cy", pos.y);
-    svgBox.append('image')
-    .attr('xlink:href', 'assets/avatar.png')
-    .attr('width', 25)
-    .attr('height', 25)
-    .attr('x', pos.x + 7)
-    .attr('y', pos.y - 13);
-  
     // Setting the required objects in chartProps so they could be used to update the chart
     this.chartProps.svg = svg;
     this.chartProps.svgBox = svgBox;
-    this.chartProps.valueline2 = valueline;
     this.chartProps.xAxis = xAxis;
     this.chartProps.yAxis = yAxis;
     this.chartProps.height = height;
@@ -343,20 +381,27 @@ export class MainComponent implements OnInit {
     this.zoom = d3.zoom()
     .on('zoom', (event) => {
       console.log('i zoom');
+  
+      this.xz = event.transform.rescaleX(this.chartProps.x);
+      this.yz = event.transform.rescaleY(this.chartProps.y);
 
-      const xz = event.transform.rescaleX(this.chartProps.x);
-      const yz = event.transform.rescaleY(this.chartProps.y);
+      gx.call(xAxis, this.xz);
+      gy.call(yAxis, this.yz);
 
-      gx.call(xAxis, xz);
-      gy.call(yAxis, yz);
-
-      valueline.update(this.chartProps.svgBox, xz, yz); // update the current line
-
-      // this.chartProps.valueline3?.update(this.chartProps.svg, xz, yz);
-
-      this.updateAvatarPosition();
+      this.valueslines.forEach( (line: Line) => {
+        line.update(this.chartProps.svgBox, this.xz, this.yz);
+        this.updateAvatarPosition(line.data, line.name, this.xz, this.yz);
+      });
     })
     .scaleExtent([1, 20]);
+
+
+    /// DRAW GLOBAL MEAN LINE
+    const valueline2: Line = new Line('line' + this.valueslines.length, this.dataGlobalMeanCo2TimeSerie,
+    this.chartProps.x, this.chartProps.y, this.listColors[2]); // define the line
+    valueline2.addToPath(this.glines); // add to path
+    d3.select('.line.line1').style("opacity", 0.6);
+    this.valueslines.push(valueline2);
 
 
     // TOOLTIP
@@ -406,11 +451,22 @@ export class MainComponent implements OnInit {
     function onMouseMove(event: any) {
       console.log('# mouse move');
       const mousePosition = d3.pointer(event);
-      const hoveredDate = _this.chartProps.x.invert(mousePosition[0]);
-      const hoveredCo2 = _this.chartProps.y.invert(mousePosition[1]);
+
+      let chartPropX;
+      let chartPropY;
+      if (_this.onZoom && _this.xz) {
+        chartPropX = _this.xz;
+        chartPropY = _this.yz;
+      } else {
+        chartPropX = _this.chartProps.x;
+        chartPropY = _this.chartProps.y;
+      }
+      const hoveredDate = chartPropX.invert(mousePosition[0]);
+      const hoveredCo2 = chartPropY.invert(mousePosition[1]);
   
       const yAccessor = (d: Co2ByOriginByTime) => d.co2;
       const xAccessor = (d: Co2ByOriginByTime) => d.date;
+      const originAccessor = (d: Co2ByOriginByTime) => d.origin;
   
       const getDistanceFromHoveredDate = (d: Co2ByOriginByTime) => Math.abs((xAccessor(d) as unknown as number) - hoveredDate);
       const getDistanceFromHoveredCo2 = (d: Co2ByOriginByTime) => Math.abs((yAccessor(d) as unknown as number) - hoveredCo2);
@@ -418,11 +474,13 @@ export class MainComponent implements OnInit {
         _this.dataDrawnCo2TimeSerie,
         (a: any, b: any) => getDistanceFromHoveredDate(a) - getDistanceFromHoveredDate(b)
       );
-      
       let closestDataPoint;
       if (closestIndex) {
         closestDataPoint = _this.dataDrawnCo2TimeSerie[closestIndex !== -1 ? closestIndex : 0];
-        if (getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > 15000000 || getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > 100) {
+
+        const maxDistCo2FromMouse = (_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1].co2 - _this.dataDrawnCo2TimeSerie[0].co2) * 1/10;
+        const maxDistDateFromMouse = (_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1].date - _this.dataDrawnCo2TimeSerie[0].date) * 1/10;
+        if (getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouse || getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouse) {
           // console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > 15000000);
           // console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > 150);
           onMouseLeave();
@@ -435,42 +493,58 @@ export class MainComponent implements OnInit {
   
       const closestXValue = xAccessor(closestDataPoint);
       const closestYValue = yAccessor(closestDataPoint);
+      const closestorigin = originAccessor(closestDataPoint);
+
+      const GESgCO2ForOneKmByCar = 220;
+      const GESgCO2ForOneChargedSmartphone = 8.3;
+
+      // We only print the co2 emitted since the beginning of the currently showing range of x
+      const gCo2 = closestYValue - _this.dataDrawnCo2TimeSerie[0].co2;
+
+      const kmByCar = Math.trunc(Math.round(1000 * gCo2 / GESgCO2ForOneKmByCar) / 1000);
+      const chargedSmartphones = Math.round(gCo2 / GESgCO2ForOneChargedSmartphone);
   
-      const formatDate = d3.timeFormat("%H:%M %B %A %-d, %Y");
-      _this.tooltip.select("#date").text(formatDate(closestXValue as unknown as Date));
-  
-      const formatInternetUsage = (d: number | { valueOf(): number; }) => `${d3.format(".1f")(d)} grammes`;
-      _this.tooltip.select("#internet").html(formatInternetUsage(closestYValue));
-  
-      const x = _this.chartProps.x(closestXValue) + margin.left;
-      const y =_this.chartProps.y(closestYValue) + margin.top;
+      const formatDate = _this.d3Locale.format("%-d %b %Y à %H:%M");
+      _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(_this.dataDrawnCo2TimeSerie[0]) as unknown as Date));
+      _this.tooltip.select("#date").text('Au ' + formatDate(closestXValue as unknown as Date));
+      _this.tooltip.select("#origin").html('sur : ' + closestorigin);
+      _this.tooltip.select("#co2").html(gCo2 + 'g');
+      _this.tooltip.select("#kmByCar").html(kmByCar + 'Km');
+      _this.tooltip.select("#chargedSmartphones").html(chargedSmartphones + ' charges');
+      
+      const x = chartPropX(closestXValue) + margin.left;
+      const y = chartPropY(closestYValue) + margin.top;
   
       //Grab the x and y position of our closest point,
-      //shift our tooltip, and hide/show our tooltip appropriately-
-  
-      _this.tooltip.style(
-        "transform",
-        `translate(` + `calc( 20% + ${x}px),` + `calc(-50% + ${y}px)` + `)`
-      );
+      //shift our tooltip, and hide/show our tooltip appropriately- 
+      if (y < height * 2/5 || x > width * 4/5) {
+        _this.tooltip.style(
+          "transform",
+          `translate(` + `calc( -25% + ${x}px),` + `calc(40% + ${y}px)` + `)`
+        );      
+      } else {
+        _this.tooltip.style(
+          "transform",
+          `translate(` + `calc( -5% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+        );
+      }
 
-      // _this.tooltip.style('top', (_this.chartProps.y(closestYValue)) + 'px').style('left', (_this.chartProps.x(closestXValue)) + 'px');
-  
       _this.tooltip.style("opacity", 1);
-  
+
       _this.tooltipCircle
-        .attr("cx", _this.chartProps.x(closestXValue))
-        .attr("cy", _this.chartProps.y(closestYValue))
+        .attr("cx", chartPropX(closestXValue))
+        .attr("cy", chartPropY(closestYValue))
         .style("opacity", 1);
   
       xAxisLine
-      .attr("x", _this.chartProps.x(closestXValue))
-      .attr("y", _this.chartProps.y(closestYValue))
-      .attr("height", _this.chartProps.height - _this.chartProps.y(closestYValue))
+      .attr("x", chartPropX(closestXValue))
+      .attr("y", chartPropY(closestYValue))
+      .attr("height", _this.chartProps.height - chartPropY(closestYValue))
       .style("opacity", 0.6);
 
       yAxisLine
-      .attr("y", _this.chartProps.y(closestYValue))
-      .attr("width", _this.chartProps.x(closestXValue))
+      .attr("y", chartPropY(closestYValue))
+      .attr("width", chartPropX(closestXValue))
       .style("opacity", 0.6);
     };
 
@@ -481,7 +555,11 @@ export class MainComponent implements OnInit {
       yAxisLine.style("opacity", 0);
     }
 
-    this.updateAvatarPosition();
+    // Add avatars for each Lines
+    this.valueslines.forEach(line => {
+      this.addAvatar(line, svgBox, 'assets/avatar_' + line.name + '.png', line.name);
+      this.updateAvatarPosition(line.data, line.name);
+    });
   }
 
   private getIndexNewLine() {
@@ -495,19 +573,28 @@ export class MainComponent implements OnInit {
   }
 
   updateChart() {
-    this.dataDrawnCo2TimeSerie = [...this.dataSumDbExtensionCo2TimeSerie]; // deep copy
+    if (this.onZoom) {
+      return;
+    }
+
+    if (this.dataDbCo2TimeSerieFiltered && this.dataDbCo2TimeSerieFiltered.length > 0) {
+      this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerieFiltered];
+    }
+    else {
+      this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerie];
+    }
+
     // reduce nbre of points by 20 and put it in dataDrawnCo2TimeSerie
     this.dataDrawnCo2TimeSerie = this.reducePointsCo2TimeSerie(this.dataDrawnCo2TimeSerie);
 
     this.dataExtensionCo2TimeSerie.forEach((entry) => {
       this.dataDrawnCo2TimeSerie.push(entry);
     });
+
     this.valueslines[0].data = this.dataDrawnCo2TimeSerie;
 
-    if (this.onZoom) {
-      return;
-    }
     this.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y);
+
     // let lastOriginValue = this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].origin;
 
     // if (lastOriginValue && this.currentOrigin && this.dataDrawnCo2TimeSerie && this.currentOrigin !== lastOriginValue) { // if different origin
@@ -527,6 +614,7 @@ export class MainComponent implements OnInit {
     // update all lines : 
     this.valueslines.forEach( (line: Line) => {
       line.update(this.chartProps.svgBox, this.chartProps.x, this.chartProps.y);
+      this.updateAvatarPosition(line.data, line.name);
     });
     console.log(this.valueslines);
 
@@ -538,20 +626,44 @@ export class MainComponent implements OnInit {
     this.chartProps.svgBox.select('.y.axis') // update y axis
       .call(this.chartProps.yAxis, this.chartProps.y);
 
-    this.updateAvatarPosition();
   }
 
-  private updateAvatarPosition() {
+  private addAvatar(valueline: Line, svgBox: any, avatar: string, lineName: string) {
+    const pos = valueline.selectPath(svgBox).node().getPointAtLength(valueline.selectPath(svgBox).node().getTotalLength());
+    svgBox.append("circle")
+    .style("stroke", "gray")
+    .style("fill", "white")
+    .attr("class", "circle_" + lineName)
+    .attr("r", 14)
+    .attr("cx", pos.x+ 20)
+    .attr("cy", pos.y);
+    svgBox.append('image')
+    .attr("class", "image_" + lineName)
+    .attr('xlink:href', avatar)
+    .attr('width', 25)
+    .attr('height', 25)
+    .attr('x', pos.x + 7)
+    .attr('y', pos.y - 13);
+  }
+
+  private updateAvatarPosition(dataTimeSerie: Co2ByOriginByTime[], lineName: string, xz?: any, yz?: any) {
     const yAccessor = (d: Co2ByOriginByTime) => d.co2;
     const xAccessor = (d: Co2ByOriginByTime) => d.date;
 
-    const xLastPos = this.chartProps.x(xAccessor(this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1]));
-    const yLastPos = this.chartProps.y(yAccessor(this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1]));
+    let xLastPos;
+    let yLastPos;
+    if (xz && yz) {
+      xLastPos = xz(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
+      yLastPos = yz(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
+    } else {
+      xLastPos = this.chartProps.x(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
+      yLastPos = this.chartProps.y(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
+    }
 
-    this.chartProps.svgBox.select('circle')
+    this.chartProps.svgBox.select('.circle_' + lineName)
     .attr("cx", xLastPos)
     .attr("cy", yLastPos);
-    this.chartProps.svgBox.select('image')
+    this.chartProps.svgBox.select('.image_' + lineName)
     .attr("x", xLastPos - 12)
     .attr("y", yLastPos - 13);
   }

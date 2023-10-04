@@ -11,8 +11,8 @@ export class AuthService {
     constructor(private http: HttpClient) {
     }
       
-    login(login:string, password:string ) {
-        return this.http.post<any>(API_URL + '/login', {login, password})
+    login(email:string, password:string ) {
+        return this.http.post<any>(API_URL + '/login', {email, password})
         .pipe(
             tap((res) => this.setSession(res)),
             shareReplay() // prevent multiple http call
@@ -47,8 +47,8 @@ export class AuthService {
         return moment(expiresAt);
     }
 
-    signUp(login:string, password:string ) {
-        return this.http.post<any>(API_URL + '/signup', {login, password})
+    signUp(email: string, login:string, password:string ) {
+        return this.http.post<any>(API_URL + '/signup', {email, login, password})
         .pipe(
             tap((res) => this.setSession(res)),
             shareReplay() // prevent multiple http call
