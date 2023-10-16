@@ -8,7 +8,7 @@
             <div class="tooltip-origin">
                 <span id="origin"></span>
             </div>
-            <div class="tooltip-co2" class="flex flex-row items-center w-3/5 mt-2 m-auto text-base">
+            <div class="tooltip-co2" class="flex flex-row items-center w-4/5 mt-2 m-auto text-base">
                 <svg height="50px" width="50px" class="mr-1" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
                 viewBox="0 0 512 512" xml:space="preserve">
            <g>
@@ -133,7 +133,7 @@
     <div id="filters" class="absolute right-0 p-2 flex flex-col mt-80">
         <div>
             <button class="btn-graph" id="zoomButton" title="Zoomer">
-                <svg width="20px" height="20px" viewBox="-0.1 0 31.874 31.874" xmlns="http://www.w3.org/2000/svg">
+                <svg width="25px" height="25px" viewBox="-0.1 0 31.874 31.874" xmlns="http://www.w3.org/2000/svg">
                     <g id="Group_23" data-name="Group 23" transform="translate(-1199.025 -182)">
                       <circle id="Ellipse_8" data-name="Ellipse 8" cx="11" cy="11" r="11" transform="translate(1200.025 183)" fill="#e8f7f9" stroke="#333" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
                       <path id="Path_25" data-name="Path 25" d="M1211,187a7,7,0,0,0-7,7" fill="none" stroke="#333" stroke-miterlimit="10" stroke-width="2"/>
@@ -141,10 +141,18 @@
                     </g>
                   </svg>
             </button>
+            <button class="btn-graph" id="global_data" title="Données du dernier jour">
+                <img src="../../assets/earth.svg" width="25px" height="25px" alt="Bouton moyenne globale" title="Données moyennes de tous les utilisateurs">
+            </button>
         </div>
         <div>
             <button class="btn-graph" id="day" title="Données du dernier jour">Aujourd'hui</button>
             <button class="btn-graph" id="all" title="Données depuis le début">Début</button>
         </div>
     </div>
+</div>
+
+<div id="first_message" class="absolute top-1/3 left-1/4 w-1/2 m-auto text-center rounded-lg bg-amber-300 shadow-2xl border-2 border-slate-300 p-2">
+    <span>Vous pouvez partir naviguer sur des sites comme Twitch (pour mes amis les gamers) ou Netflix par exemple et revenez voir les résultats après !</span><br>
+    <button class="text-blue-400">Ne plus afficher</button>
 </div>

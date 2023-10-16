@@ -19,7 +19,8 @@ export class MainComponent implements OnInit {
 
   parseDate = d3.timeParse('%d-%m-%Y');
 
-  public dataExtensionCo2TimeSerie!: Co2ByOriginByTime[];
+  public dataExtensionCo2TimeSerie: Co2ByOriginByTime[] = [];
+  public firstDataExtensionCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataDrawnCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataSumDbExtensionCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataDbCo2TimeSerie: Co2ByOriginByTime[] = [];
@@ -39,12 +40,36 @@ export class MainComponent implements OnInit {
   private d3Locale!: d3.TimeLocaleObject;
   private xz: any;
   private yz: any;
+  private GESgCO2ForOneKmByCar = 220;
+  private GESgCO2ForOneChargedSmartphone = 8.3;
 
   constructor(private lineDataApi: LineDataApiService) {
   }
 
   ngOnInit(): void {
     let saveData = false;
+
+    // setInterval(() => {
+    //   console.log('##### FAKE DATA increment');
+    //   let co2 = 0;
+    //   if (this.dataExtensionCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 0) {
+    //     co2 = this.dataExtensionCo2TimeSerie[this.dataExtensionCo2TimeSerie.length - 1].co2;
+    //   } else if (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0) {
+    //     co2 = this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2;
+    //   }
+    //   this.dataDbCo2TimeSerie.push({co2: co2, date: new Date().getTime()});
+    //   this.formatDate(this.dataDbCo2TimeSerie);
+    //   if (this.chartProps) {
+    //     this.updateChart();
+    //   } else {
+    //     this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+    //     this.dataExtensionCo2TimeSerie.forEach((entry) => {
+    //       this.dataSumDbExtensionCo2TimeSerie.push(entry);
+    //     });
+    //     this.buildChart();
+    //   }
+    // }, 1500);
+
 
     this.d3Locale = d3.timeFormatLocale({
       "dateTime": "%A, %e %B %Y г. %X",
@@ -98,9 +123,14 @@ export class MainComponent implements OnInit {
     }
 
     window.addEventListener('dataTotalCo2TimeSerie', (e: any) => {
-      this.dataExtensionCo2TimeSerie = e.detail;
+      if (!saveData) {
+        this.firstDataExtensionCo2TimeSerie = e.detail;
+      } else {
+        this.dataExtensionCo2TimeSerie = e.detail;
+      }
+
       console.log('# extension data');
-      console.log(this.dataExtensionCo2TimeSerie);
+      console.log(this.firstDataExtensionCo2TimeSerie);
 
       if (!saveData) {
         saveData = true;
@@ -115,16 +145,17 @@ export class MainComponent implements OnInit {
               console.log(this.dataDbCo2TimeSerie);
             }
 
-            if (this.dataExtensionCo2TimeSerie) {
+            if ((this.firstDataExtensionCo2TimeSerie && this.firstDataExtensionCo2TimeSerie.length > 0) || (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0)) {
               this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-              this.dataExtensionCo2TimeSerie.forEach((entry) => {
+              this.firstDataExtensionCo2TimeSerie.forEach((entry) => {
                 this.dataSumDbExtensionCo2TimeSerie.push(entry);
               });
             }
+      
     
             // if the extension has been reset to 0 or reinstalled or if it's a new computer  -- 50 just to make sure we are indeed below 
             if (this.dataExtensionCo2TimeSerie && this.dataDbCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 0 && this.dataDbCo2TimeSerie.length > 0 &&
-              this.dataExtensionCo2TimeSerie[0].co2 + 50 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
+              this.dataExtensionCo2TimeSerie[0].co2 + 20 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
                 const confirmMessage = confirm('Nous avons détecté une remise à zéro de l\'extension ou une nouvelle installation. ' +
                 'Confirmez vous d\'ajouter les nouvelles données à venir à celles déjà existantes pour votre compte ou annulez et repartez depuis les nouvelles données de l\'extension seulement ?');
                 if (confirmMessage) {
@@ -157,17 +188,41 @@ export class MainComponent implements OnInit {
           },
           error: (err) => console.log(err.message)
         });
+      } else {
+        this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+        this.firstDataExtensionCo2TimeSerie.forEach((entry) => {  // fill with data extension when you were not on the website
+          this.dataSumDbExtensionCo2TimeSerie.push(entry);
+        });
+        this.dataExtensionCo2TimeSerie.forEach((entry) => { // fill with data extension while you are on the website
+          this.dataSumDbExtensionCo2TimeSerie.push(entry);
+        });
       }
 
+
       const co2_max = document.getElementById('co2_max');
-      if (co2_max && this.dataExtensionCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 2) {
-        co2_max.innerHTML = (this.dataExtensionCo2TimeSerie[this.dataExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + 'g';
+      const kmByCar_max = document.getElementById('kmByCar_max');
+      const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
+      if (co2_max && this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 2) {
+        co2_max.innerHTML = (this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
+      
+        if (kmByCar_max) {
+          const kmByCar = Math.trunc(Math.round(1000 * this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);
+
+          kmByCar_max.innerHTML = kmByCar + ' Kms';
+        }
+        if (chargedSmartphones_max) {
+          const chargedSmartphones = Math.round(this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneChargedSmartphone);
+
+          chargedSmartphones_max.innerHTML = chargedSmartphones + ' charges';
+        }
+
       }
 
 
       if (this.dataSumDbExtensionCo2TimeSerie &&  this.chartProps) {
         this.updateChart();
       } else if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
+        console.log(this.dataSumDbExtensionCo2TimeSerie);
         this.buildChart();
       }
     });
@@ -186,6 +241,21 @@ export class MainComponent implements OnInit {
           this.chartProps.svgBox.call(this.zoom as any, d3.zoomIdentity);
         }
         this.onZoom = !this.onZoom; // to disable update when we want to zoom/pan
+      }
+    });
+
+    const globalDataButton = document.getElementById('global_data');
+    globalDataButton?.addEventListener('click', () => {
+      if (globalDataButton.className.includes('activated')) {
+        globalDataButton.className = 'btn-graph';
+        d3.select('.line.line0').style("opacity", 0);
+        d3.select('.circle_line0').style("opacity", 0);
+        d3.select('.image_line0').style("opacity", 0);
+      } else {
+        globalDataButton.className = 'activated';
+        d3.select('.line.line0').style("opacity", 1);
+        d3.select('.circle_line0').style("opacity", 1);
+        d3.select('.image_line0').style("opacity", 1);
       }
     });
 
@@ -350,11 +420,18 @@ export class MainComponent implements OnInit {
     // Add lines group
     this.glines = svgBox.append("g").attr("id", "lines");
 
-    // define current origin by last origin of values
-    this.currentOrigin = this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 2].origin;
+
+    /// DRAW GLOBAL MEAN LINE
+    if (this.dataGlobalMeanCo2TimeSerie && this.dataGlobalMeanCo2TimeSerie.length > 0) {
+      const valueline2: Line = new Line('line' + this.valueslines.length, this.dataGlobalMeanCo2TimeSerie,
+      this.chartProps.x, this.chartProps.y, this.listColors[2]); // define the line
+      valueline2.addToPath(this.glines); // add to path
+      this.valueslines.push(valueline2);
+    }
+
 
     // Add first line 
-    let valueline: Line = new Line('line' + this.valueslines.length, this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.selectedColor, this.currentOrigin); // create the ligne
+    let valueline: Line = new Line('line' + this.valueslines.length, this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.selectedColor); // create ligne
     valueline.addToPath(this.glines); // add to path
 
     this.valueslines.push(valueline);
@@ -394,14 +471,6 @@ export class MainComponent implements OnInit {
       });
     })
     .scaleExtent([1, 20]);
-
-
-    /// DRAW GLOBAL MEAN LINE
-    const valueline2: Line = new Line('line' + this.valueslines.length, this.dataGlobalMeanCo2TimeSerie,
-    this.chartProps.x, this.chartProps.y, this.listColors[2]); // define the line
-    valueline2.addToPath(this.glines); // add to path
-    d3.select('.line.line1').style("opacity", 0.6);
-    this.valueslines.push(valueline2);
 
 
     // TOOLTIP
@@ -495,21 +564,18 @@ export class MainComponent implements OnInit {
       const closestYValue = yAccessor(closestDataPoint);
       const closestorigin = originAccessor(closestDataPoint);
 
-      const GESgCO2ForOneKmByCar = 220;
-      const GESgCO2ForOneChargedSmartphone = 8.3;
-
       // We only print the co2 emitted since the beginning of the currently showing range of x
       const gCo2 = closestYValue - _this.dataDrawnCo2TimeSerie[0].co2;
 
-      const kmByCar = Math.trunc(Math.round(1000 * gCo2 / GESgCO2ForOneKmByCar) / 1000);
-      const chargedSmartphones = Math.round(gCo2 / GESgCO2ForOneChargedSmartphone);
+      const kmByCar = Math.trunc(Math.round(1000 * gCo2 / _this.GESgCO2ForOneKmByCar) / 1000);
+      const chargedSmartphones = Math.round(gCo2 / _this.GESgCO2ForOneChargedSmartphone);
   
       const formatDate = _this.d3Locale.format("%-d %b %Y à %H:%M");
       _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(_this.dataDrawnCo2TimeSerie[0]) as unknown as Date));
       _this.tooltip.select("#date").text('Au ' + formatDate(closestXValue as unknown as Date));
       _this.tooltip.select("#origin").html('sur : ' + closestorigin);
-      _this.tooltip.select("#co2").html(gCo2 + 'g');
-      _this.tooltip.select("#kmByCar").html(kmByCar + 'Km');
+      _this.tooltip.select("#co2").html(gCo2 + ' gCO<sub>2</sub>e');
+      _this.tooltip.select("#kmByCar").html(kmByCar + 'Kms');
       _this.tooltip.select("#chargedSmartphones").html(chargedSmartphones + ' charges');
       
       const x = chartPropX(closestXValue) + margin.left;
@@ -560,6 +626,12 @@ export class MainComponent implements OnInit {
       this.addAvatar(line, svgBox, 'assets/avatar_' + line.name + '.png', line.name);
       this.updateAvatarPosition(line.data, line.name);
     });
+
+
+    // by default we hide global data : 
+    d3.select('.line.line0').style("opacity", 0);
+    d3.select('.circle_line0').style("opacity", 0);
+    d3.select('.image_line0').style("opacity", 0);
   }
 
   private getIndexNewLine() {
@@ -580,9 +652,15 @@ export class MainComponent implements OnInit {
     if (this.dataDbCo2TimeSerieFiltered && this.dataDbCo2TimeSerieFiltered.length > 0) {
       this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerieFiltered];
     }
-    else {
+    else if (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0) {
       this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerie];
+    } else {
+      this.dataDrawnCo2TimeSerie = [];
     }
+
+    this.firstDataExtensionCo2TimeSerie.forEach((entry) => {  // fill with data extension when you were not on the website
+      this.dataDrawnCo2TimeSerie.push(entry);
+    });
 
     // reduce nbre of points by 20 and put it in dataDrawnCo2TimeSerie
     this.dataDrawnCo2TimeSerie = this.reducePointsCo2TimeSerie(this.dataDrawnCo2TimeSerie);
@@ -591,7 +669,13 @@ export class MainComponent implements OnInit {
       this.dataDrawnCo2TimeSerie.push(entry);
     });
 
-    this.valueslines[0].data = this.dataDrawnCo2TimeSerie;
+
+    if (this.valueslines.length > 1) {
+      this.valueslines[1].data = this.dataDrawnCo2TimeSerie;
+    } else {
+      this.valueslines[0].data = this.dataDrawnCo2TimeSerie;
+    }
+
 
     this.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y);
 

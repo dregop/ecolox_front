@@ -6,19 +6,12 @@ import { AppComponent } from './app.component';
 import { BannerComponent } from './banner/banner.component';
 import { MenuComponent } from './menu/menu.component';
 import { MainComponent } from './main/main.component';
-import { ExamsApiService } from './exams/exams-api.service';
-import {ExamFormComponent} from './exams/exam-form.component';
-import {ExamsComponent} from './exams/exams.component';
-import {RouterModule, Routes} from '@angular/router';
 import { UserComponent } from './user/user.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
 import { AuthInterceptor } from './auth.interceptor';
-
-const appRoutes: Routes = [
-  { path: 'new-exam', component: ExamFormComponent },
-  { path: '', component: ExamsComponent },
-];
+import { LegalMentionsComponent } from './legal-mentions/legal-mentions.component';
+import { HomeComponent } from './home/home.component';
 
 
 @NgModule({
@@ -27,21 +20,18 @@ const appRoutes: Routes = [
     BannerComponent,
     MenuComponent,
     MainComponent,
-    ExamFormComponent,
-    ExamsComponent,
-    UserComponent
+    UserComponent,
+    LegalMentionsComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    RouterModule.forRoot(
-      appRoutes,
-    ),
     FormsModule,
     ReactiveFormsModule
   ],
-  providers: [ExamsApiService, AuthService,
+  providers: [AuthService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })
