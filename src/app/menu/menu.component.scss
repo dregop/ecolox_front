@@ -1,15 +1,19 @@
 .btn-menu {
-    @apply rounded-lg border-2 border-amber-200 bg-amber-100 p-2  pl-2 pr-2 mt-4 text-xl font-semibold cursor-default
+    @apply rounded-lg border-2 border-slate-500 bg-slate-300 p-1  pl-2 pr-2 mt-3 lg:text-lg text-base font-bold cursor-default w-full text-left lg:min-w-[200px] min-w-[180px] hover:ml-1
+}
+
+.total {
+     @apply opacity-70 mt-6
 }
 
 .deplacement {
-    @apply text-red-500 
+    @apply  opacity-70
 }
 
 .maison {
-    @apply text-yellow-900
+    @apply  opacity-70
 }
 
 .internet {
-    @apply text-blue-700 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 cursor-pointer
+    @apply ml-1 bg-slate-300 hover:border-slate-800 active:bg-slate-400 cursor-pointer min-w-[205px]
 }

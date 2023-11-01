@@ -1,4 +1,18 @@
 <ng-container *ngIf="isAuthenticated; else unAuthenticated" >
+  <div id="message_overlay" class="absolute w-full h-full bg-slate-800 opacity-30 z-40" *ngIf="getStorageDisplayFirstMessage">
+  </div>
+  <div id="first_message" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto" *ngIf="getStorageDisplayFirstMessage">
+    <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
+      <span class="text-sm font-semibold">Tu peux partir naviguer sur des sites comme Twitch (pour mes amis les gamers) ou Netflix par exemple et reviens voir les résultats après !</span><br>
+      <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
+      <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
+  
+      <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
+      <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../assets/close.svg" width="40"></button>
+    </div>
+  </div>
+
+
   <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center">
     <app-banner></app-banner>      
     <ng-container *ngIf="this.currentUser && isAuthenticated">
@@ -181,7 +195,7 @@
           <app-menu></app-menu>
       </div>
       <div id="main">
-        <app-main></app-main>
+        <app-main (displayMessageExtension)="isExtensionMessageDisplayed($event)"></app-main>
       </div>
   </div>
 </ng-container>
@@ -189,13 +203,17 @@
   <div class="flex lg:flex-row flex-col items-center p-10">
     <div class="basis-1/2 lg:mr-10">
       <img src="../assets/ecobuddy_logo_with_buddy_alpha.png" alt="Logo Eco Buddy" class="lg:w-3/5 w-4/5 m-auto"/>
-      <p class="text-center">
+      <p class="text-justify">
         Eco Buddy, le site pour suivre en temps réel ses émissions de Co<sub>2</sub>e (c-a-d l'ensemble des gaz à effet de serre émis, rapporté à la pollution du Co<sub>2</sub>
         <a href="https://fr.wikipedia.org/wiki/%C3%89quivalent_CO2" title="Définition Wikipédia"><img style="width: 20px;display: inline;" src="../assets/info-icon.svg" alt="Définition Wikipédia"/></a>).
         <br><br>
         Vous n'avez <span class="line-through">quasi</span> rien à faire, on s'occupe de tout ! <br>
-        Installez l'extension chrome et inscrivez vous pour commencer l'aventure : <br><br><a href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" title="Eco Buddy Extension" class="bg-amber-500 p-2 rounded text-white text-lg font-semibold">Télécharger sur Chrome Web Store</a>
+        Installez l'extension chrome et inscrivez vous pour commencer l'aventure : <br><br>
       </p>
+      <p class="text-center">
+        <a href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" title="Eco Buddy Extension" class="bg-amber-500 p-1 rounded text-white text-lg font-semibold ">Télécharger sur Chrome Web Store</a>
+      </p>
+
     </div>
     <div class="basis-1/2 lg:mt-20 bg-stone-300 rounded-lg m-4">
       <form [formGroup]="loginForm">
@@ -218,11 +236,10 @@
       </form>
      </div>
   </div>
-</ng-template>
-
-<div class="fixed bottom-0 text-xs text-center w-full m-auto">
+  <div class="fixed bottom-0 text-xs text-center w-full m-auto">
     <a routerLink="/mentions-legales" class="">Mentions Légales</a>
 </div>
+</ng-template>
 
 
 <div id="toast">

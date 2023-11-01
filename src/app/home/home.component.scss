@@ -6,9 +6,10 @@
     display: flex;
 }
 #menu {
-    width: 8%;
+    width: 10%;
     height: 94vh;
     z-index: 30;
+    margin-left: -13px;
 }
 #main {
     width: 90%;
@@ -20,7 +21,7 @@ legend {
     color: rgb(56, 56, 56);
 }
 
-input {
+fieldset > input {
     width: 100%;
     height: 40px;
     margin: 5px;

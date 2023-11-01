@@ -1,7 +1,8 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { Line } from '../models/line';
 import { LineDataApiService } from '../services/line-data-api.service';
+import { GraphService } from './graph.service';
 
 export  class Co2ByOriginByTime {
   co2!: number;
@@ -14,7 +15,7 @@ export  class Co2ByOriginByTime {
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-export class MainComponent implements OnInit {
+export class MainComponent implements OnInit, AfterContentInit {
   @ViewChild('chart') chartElement!: ElementRef;
 
   parseDate = d3.timeParse('%d-%m-%Y');
@@ -31,56 +32,65 @@ export class MainComponent implements OnInit {
   private valueslines: Line[] = [];
   private zoom!: any;
   private onZoom = false;
-  private currentOrigin!: any;
   private selectedColor!: string;
   private listColors = ['green', 'orange', 'red', 'yellow'];
   private marginYDomain = 50;
   private tooltip!: any;
   private tooltipCircle!: any;
-  private d3Locale!: d3.TimeLocaleObject;
   private xz: any;
   private yz: any;
   private GESgCO2ForOneKmByCar = 220;
   private GESgCO2ForOneChargedSmartphone = 8.3;
+  private isDataSaved = false;
+  public isExtensionMessageDisplayed = false;
 
-  constructor(private lineDataApi: LineDataApiService) {
+  @Output() displayMessageExtension = new EventEmitter<boolean>();
+
+  constructor(private lineDataApi: LineDataApiService, private graphService: GraphService) {
+  }
+  ngAfterContentInit(): void {
+    setTimeout(() => { //TODO de la belle merde
+      if (this.isDataSaved) {
+        this.displayMessageExtension.emit(false);
+        this.isExtensionMessageDisplayed = false;
+      } else {
+        this.displayMessageExtension.emit(true);
+        this.isExtensionMessageDisplayed = true;
+      }
+    }, 2000);
   }
 
   ngOnInit(): void {
-    let saveData = false;
+    this.displayMessageExtension.emit(false);
 
-    // setInterval(() => {
-    //   console.log('##### FAKE DATA increment');
-    //   let co2 = 0;
-    //   if (this.dataExtensionCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 0) {
-    //     co2 = this.dataExtensionCo2TimeSerie[this.dataExtensionCo2TimeSerie.length - 1].co2;
-    //   } else if (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0) {
-    //     co2 = this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2;
-    //   }
-    //   this.dataDbCo2TimeSerie.push({co2: co2, date: new Date().getTime()});
-    //   this.formatDate(this.dataDbCo2TimeSerie);
-    //   if (this.chartProps) {
-    //     this.updateChart();
-    //   } else {
-    //     this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-    //     this.dataExtensionCo2TimeSerie.forEach((entry) => {
-    //       this.dataSumDbExtensionCo2TimeSerie.push(entry);
-    //     });
-    //     this.buildChart();
-    //   }
-    // }, 1500);
+    this.graphService.setD3Locale(); // initiate date for x graph 
 
+    this.lineDataApi
+    .getData()
+    .subscribe({
+      next: (val) => {
+        if (val && val.data) {
+          this.dataDbCo2TimeSerie = JSON.parse(val.data);
+          this.formatDate(this.dataDbCo2TimeSerie);
+          console.log('# Database data');
+          console.log(this.dataDbCo2TimeSerie);
+          this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+          this.fillIndicators();
+        }
 
-    this.d3Locale = d3.timeFormatLocale({
-      "dateTime": "%A, %e %B %Y г. %X",
-      "date": "%d.%m.%Y",
-      "time": "%H:%M:%S",
-      "periods": [":00", ":00"],
-      "days": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
-      "shortDays": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-      "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
-      "shortMonths": ["Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jui", "Aoû", "Sep", "Oct", "Nov", "Déc"]
+        this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+      }
     });
+
+    const drawLineBdd = setInterval(() => {
+      if (this.chartProps) { 
+        this.updateChart();
+        clearInterval(drawLineBdd);
+      } else if (this.dataDbCo2TimeSerie.length > 0 ||this.dataExtensionCo2TimeSerie.length > 0){
+        this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+        this.buildChart();
+      }
+    }, 2000);
 
     // Add an event listener that run the function when dimension change
     window.addEventListener('resize', updateOnResize);
@@ -95,12 +105,7 @@ export class MainComponent implements OnInit {
           console.log('# on resize');
           _this.chartProps.svg
           .attr("viewBox", '0 0 ' +  newWidth + ' ' +newHeight );
-          // .attr("width", newWidth)
-          // .attr("height", newHeight);
 
-          // _this.chartProps.svgBox
-          // .attr('transform', `translate(${_this.chartProps.margin.left},${_this.chartProps.margin.top})`);
-        
           _this.chartProps.x.range([ 0, newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right ]);
           _this.chartProps.y.range([ newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom, 0]);
           _this.chartProps.svgBox.select('.x.axis') // update x axis
@@ -110,12 +115,19 @@ export class MainComponent implements OnInit {
           _this.chartProps.svgBox.select('.y.axis') // update y axis
           .call(_this.chartProps.yAxis, _this.chartProps.y);
 
+
+          console.log(newWidth);
+          console.log(newHeight);
+          _this.chartProps.svgBox.select('.arrow')
+          .attr("x", newWidth - 80 )
+          .attr("y", newHeight -67);
+
           // update movemove 
           _this.chartProps.listeningRect
           .attr('width', newWidth)
           .attr('height', newHeight);
 
-
+          _this.chartProps.width = newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right;
           _this.chartProps.height = newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom;
   
         }
@@ -123,22 +135,39 @@ export class MainComponent implements OnInit {
     }
 
     window.addEventListener('dataTotalCo2TimeSerie', (e: any) => {
-      if (!saveData) {
+      this.displayMessageExtension.emit(false);
+
+      console.log('# extension data');
+      console.log(e.detail);
+      if (!this.isDataSaved) {
         this.firstDataExtensionCo2TimeSerie = e.detail;
       } else {
         this.dataExtensionCo2TimeSerie = e.detail;
       }
+      console.log(this.dataExtensionCo2TimeSerie);
+      if (!this.isDataSaved) {
+        this.isDataSaved = true;
 
-      console.log('# extension data');
-      console.log(this.firstDataExtensionCo2TimeSerie);
+        // IF AN OTHER BROWSER INSTANCE IS RUNNING
+        if (this.firstDataExtensionCo2TimeSerie && this.dataDbCo2TimeSerie && this.firstDataExtensionCo2TimeSerie.length > 5 && this.dataDbCo2TimeSerie.length > 0) {
+          if (this.firstDataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date || this.firstDataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
+            // We look at index 1 because it we look at index 0, the date of extension is always few second below dataDb. Probably because of the way we refresh extension data and we store in db
+            console.log('Instance issue');
+            this.firstDataExtensionCo2TimeSerie = [];
+          } 
+          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
+        }
 
-      if (!saveData) {
-        saveData = true;
+        if (this.dataExtensionCo2TimeSerie.length > 5  && this.dataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date || this.dataExtensionCo2TimeSerie.length > 5 &&  this.dataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
+          this.dataExtensionCo2TimeSerie.map((x) => x.co2 =  this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2 + x.co2);
+        }
+
         this.lineDataApi
         .getData()
         .subscribe({
           next: (val) => {
             if (val && val.data) {
+
               this.dataDbCo2TimeSerie = JSON.parse(val.data);
               this.formatDate(this.dataDbCo2TimeSerie);
               console.log('# Database data');
@@ -152,28 +181,6 @@ export class MainComponent implements OnInit {
               });
             }
       
-    
-            // if the extension has been reset to 0 or reinstalled or if it's a new computer  -- 50 just to make sure we are indeed below 
-            if (this.dataExtensionCo2TimeSerie && this.dataDbCo2TimeSerie && this.dataExtensionCo2TimeSerie.length > 0 && this.dataDbCo2TimeSerie.length > 0 &&
-              this.dataExtensionCo2TimeSerie[0].co2 + 20 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
-                const confirmMessage = confirm('Nous avons détecté une remise à zéro de l\'extension ou une nouvelle installation. ' +
-                'Confirmez vous d\'ajouter les nouvelles données à venir à celles déjà existantes pour votre compte ou annulez et repartez depuis les nouvelles données de l\'extension seulement ?');
-                if (confirmMessage) {
-                  // this to reset data from extension and load previous data into extension
-                  dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: this.dataSumDbExtensionCo2TimeSerie}));
-                } else {
-                  // reset to 0
-                  dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
-                  this.dataSumDbExtensionCo2TimeSerie = [...this.dataExtensionCo2TimeSerie];
-                  // replace in db TODO
-                  this.updateData({
-                    'category': 'internet',
-                    'data': JSON.stringify([])
-                  });
-                }
-            } else {
-              dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
-            }
             if (val && val.data) {
               this.updateData({
                 'category': 'internet',
@@ -197,26 +204,7 @@ export class MainComponent implements OnInit {
           this.dataSumDbExtensionCo2TimeSerie.push(entry);
         });
       }
-
-
-      const co2_max = document.getElementById('co2_max');
-      const kmByCar_max = document.getElementById('kmByCar_max');
-      const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
-      if (co2_max && this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 2) {
-        co2_max.innerHTML = (this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
-      
-        if (kmByCar_max) {
-          const kmByCar = Math.trunc(Math.round(1000 * this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);
-
-          kmByCar_max.innerHTML = kmByCar + ' Kms';
-        }
-        if (chargedSmartphones_max) {
-          const chargedSmartphones = Math.round(this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneChargedSmartphone);
-
-          chargedSmartphones_max.innerHTML = chargedSmartphones + ' charges';
-        }
-
-      }
+      this.fillIndicators();
 
 
       if (this.dataSumDbExtensionCo2TimeSerie &&  this.chartProps) {
@@ -385,33 +373,22 @@ export class MainComponent implements OnInit {
     this.chartProps.x = d3.scaleTime().range([0, width]);
     this.chartProps.y = d3.scaleLinear().range([height, 0]);
 
-    const formatMillisecond = this.d3Locale.format(".%L"),
-    formatSecond = this.d3Locale.format(":%S"),
-    formatMinute = this.d3Locale.format("%H:%M"),
-    formatHour = this.d3Locale.format("%H %p"),
-    formatDay = this.d3Locale.format("%a %d"),
-    formatWeek = this.d3Locale.format("%b %d"),
-    formatMonth = this.d3Locale.format("%B"),
-    formatYear = this.d3Locale.format("%Y");
-
-    function multiFormat(date: any) {
-      if (typeof date === 'string') {
-        date = new Date(date);
-      }
-      return (d3.timeSecond(date) < date ? formatMillisecond
-          : d3.timeMinute(date) < date ? formatSecond
-          : d3.timeHour(date) < date ? formatMinute
-          : d3.timeDay(date) < date ? formatHour
-          : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
-          : d3.timeYear(date) < date ? formatMonth
-          : formatYear)(date);
-    }
 
     // Define the axes
     const xAxis = (g: any, x: any) => g
-    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(multiFormat));
+    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(10));
     var yAxis = (g: any, y: any) => g
     .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0));
+
+
+    svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "middle")
+    .attr("x", 100)
+    .attr("y", 300)
+    .style("font-size", "12px")
+    .attr("dy", ".75em")
+    .text("Co2(grammes)");
   
     this.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y);
 
@@ -435,16 +412,30 @@ export class MainComponent implements OnInit {
     valueline.addToPath(this.glines); // add to path
 
     this.valueslines.push(valueline);
+
     // Add the X Axis
     const gx = svgBox.append('g')
       .attr('class', 'x axis')
       .attr('transform', `translate(0,${height})`)
       .call(xAxis, this.chartProps.x);
-  
+
+      console.log(width);
+      console.log(height);
+      svgBox.append('image')
+      .attr("class", "arrow")
+      .attr('xlink:href', "assets/arrow.png")
+      .attr('width', 14)
+      .attr('height', 14)
+      .attr('x', width - 5)
+      .attr('opacity', '1')
+      .attr('y', height - 7);
+
     // Add the Y Axis
     const gy = svgBox.append('g')
       .attr('class', 'y axis')
       .call(yAxis, this.chartProps.y);
+
+    gy.selectAll("path,line").remove();
 
     // Setting the required objects in chartProps so they could be used to update the chart
     this.chartProps.svg = svg;
@@ -464,6 +455,8 @@ export class MainComponent implements OnInit {
 
       gx.call(xAxis, this.xz);
       gy.call(yAxis, this.yz);
+
+      gy.selectAll("path,line").remove();
 
       this.valueslines.forEach( (line: Line) => {
         line.update(this.chartProps.svgBox, this.xz, this.yz);
@@ -544,14 +537,23 @@ export class MainComponent implements OnInit {
         (a: any, b: any) => getDistanceFromHoveredDate(a) - getDistanceFromHoveredDate(b)
       );
       let closestDataPoint;
+    
+
       if (closestIndex) {
         closestDataPoint = _this.dataDrawnCo2TimeSerie[closestIndex !== -1 ? closestIndex : 0];
 
-        const maxDistCo2FromMouse = (_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1].co2 - _this.dataDrawnCo2TimeSerie[0].co2) * 1/10;
-        const maxDistDateFromMouse = (_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1].date - _this.dataDrawnCo2TimeSerie[0].date) * 1/10;
-        if (getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouse || getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouse) {
-          // console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > 15000000);
-          // console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > 150);
+        const Ymax = d3.max(_this.dataDrawnCo2TimeSerie, (d) => { return d.co2 + _this.marginYDomain; });
+        const Xmax = Math.abs(xAccessor(_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1]) - xAccessor(_this.dataDrawnCo2TimeSerie[0]));
+        // console.log(Xmax);
+        // console.log(Ymax);
+        const maxDistDateFromMouseDisplay = Xmax ? Xmax * 2/10 : 0;
+        const maxDistCo2FromMouseDisplay = Ymax ? Ymax * 2/10 : 0;
+        // console.log('coef date : ', maxDistDateFromMouseDisplay);
+        // console.log('coef co2 : ', maxDistCo2FromMouseDisplay);
+        
+        if (getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouseDisplay ||getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouseDisplay) {
+          console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]));
+          console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]));
           onMouseLeave();
           return;
         }
@@ -570,7 +572,7 @@ export class MainComponent implements OnInit {
       const kmByCar = Math.trunc(Math.round(1000 * gCo2 / _this.GESgCO2ForOneKmByCar) / 1000);
       const chargedSmartphones = Math.round(gCo2 / _this.GESgCO2ForOneChargedSmartphone);
   
-      const formatDate = _this.d3Locale.format("%-d %b %Y à %H:%M");
+      const formatDate = _this.graphService.d3Locale.format("%-d %b %Y à %H:%M");
       _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(_this.dataDrawnCo2TimeSerie[0]) as unknown as Date));
       _this.tooltip.select("#date").text('Au ' + formatDate(closestXValue as unknown as Date));
       _this.tooltip.select("#origin").html('sur : ' + closestorigin);
@@ -582,18 +584,33 @@ export class MainComponent implements OnInit {
       const y = chartPropY(closestYValue) + margin.top;
   
       //Grab the x and y position of our closest point,
-      //shift our tooltip, and hide/show our tooltip appropriately- 
-      if (y < height * 2/5 || x > width * 4/5) {
+      //shift our tooltip, and hide/show our tooltip appropriately
+
+      console.log('x : ', x);
+      console.log('y ', y);
+
+      if (x < _this.chartProps.width * 1/10) {
         _this.tooltip.style(
           "transform",
-          `translate(` + `calc( -25% + ${x}px),` + `calc(40% + ${y}px)` + `)`
-        );      
+          `translate(` + `calc(+40% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+        );
+      } else if (x > _this.chartProps.width * 4/5) {
+        _this.tooltip.style(
+          "transform",
+          `translate(` + `calc(-40% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+        );
+      }
+      else if (y > _this.chartProps.height * 4/5) {
+        _this.tooltip.style(
+          "transform",
+          `translate(` + `calc(-5% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+        )
       } else {
         _this.tooltip.style(
           "transform",
-          `translate(` + `calc( -5% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+          `translate(` + `calc( -5% + ${x}px),` + `calc(+40% + ${y}px)` + `)`
         );
-      }
+      }  
 
       _this.tooltip.style("opacity", 1);
 
@@ -710,6 +727,8 @@ export class MainComponent implements OnInit {
     this.chartProps.svgBox.select('.y.axis') // update y axis
       .call(this.chartProps.yAxis, this.chartProps.y);
 
+      this.chartProps.svgBox.select('.y.axis').selectAll("path,line").remove();
+
   }
 
   private addAvatar(valueline: Line, svgBox: any, avatar: string, lineName: string) {
@@ -752,9 +771,40 @@ export class MainComponent implements OnInit {
     .attr("y", yLastPos - 13);
   }
 
-  private reset() {
+  public reset(): void {
     this.chartProps.svgBox.transition()
       .duration(750)
       .call(this.zoom.transform, d3.zoomIdentity);
+  }
+
+  public closeMessageOverlay(): void {
+    const message = document.getElementById('install_extension_message');
+    if (message)
+    {
+      message.style.display = 'none';
+    }
+  }
+
+  private fillIndicators(): void {
+    const co2_max = document.getElementById('co2_max');
+    const kmByCar_max = document.getElementById('kmByCar_max');
+    const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
+    if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
+      if (co2_max) {
+        co2_max.innerHTML = (this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
+      }
+
+    
+      if (kmByCar_max) {
+        const kmByCar = Math.trunc(Math.round(1000 * this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);
+
+        kmByCar_max.innerHTML = kmByCar + ' Kms';
+      }
+      if (chargedSmartphones_max) {
+        const chargedSmartphones = Math.round(this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneChargedSmartphone);
+
+        chargedSmartphones_max.innerHTML = chargedSmartphones + ' charges';
+      }
+    }
   }
 }

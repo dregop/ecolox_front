@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { shareReplay } from 'rxjs';
-import { API_URL } from 'src/app/env';
+import { API_URL } from 'src/environments/env.dev';
 import { User } from 'src/app/models/user';
 
 @Injectable({

@@ -2,8 +2,8 @@ import * as moment from "moment";
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { User } from '../models/user';
-import { shareReplay, tap } from 'rxjs';
-import { API_URL } from "../env";
+import { Observable, shareReplay, tap } from 'rxjs';
+import { API_URL } from "../../environments/env.dev";
 
 @Injectable()
 export class AuthService {
@@ -54,5 +54,10 @@ export class AuthService {
             shareReplay() // prevent multiple http call
           );
     }
+
+    test(): Observable<any> {
+        return this.http
+          .post(`${API_URL}/test`, {});
+      }
 }
 

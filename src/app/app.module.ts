@@ -12,6 +12,7 @@ import { AuthService } from './services/auth.service';
 import { AuthInterceptor } from './auth.interceptor';
 import { LegalMentionsComponent } from './legal-mentions/legal-mentions.component';
 import { HomeComponent } from './home/home.component';
+import { GraphLegendComponent } from './main/graph-legend/graph-legend.component';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { HomeComponent } from './home/home.component';
     MainComponent,
     UserComponent,
     LegalMentionsComponent,
-    HomeComponent
+    HomeComponent,
+    GraphLegendComponent
   ],
   imports: [
     BrowserModule,

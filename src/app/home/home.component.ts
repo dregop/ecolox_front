@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterContentInit, Component, OnInit } from '@angular/core';
 import {Subscription} from 'rxjs';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,7 +17,7 @@ enum toastType {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, AfterContentInit {
   title = 'app';
   marketStatus!: Co2ByOriginByTime[];
   marketStatusToPlot: Co2ByOriginByTime[] = [];
@@ -27,6 +27,8 @@ export class HomeComponent {
   currentUser!: User;
   toastMessage!: string;
   showIndicatorsBool: boolean = false;
+  public getStorageDisplayFirstMessage = false;
+  public extensionDisplayed!: boolean;
 
   set MarketStatus(status: Co2ByOriginByTime[]) {
     this.marketStatus = status;
@@ -45,6 +47,9 @@ export class HomeComponent {
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
+  ngAfterContentInit(): void {
+    this.displayFirstMessage();
+  }
   
   ngOnInit() {
     this.isAuthenticated = this.authService.isLoggedIn();
@@ -54,6 +59,27 @@ export class HomeComponent {
         error: (err) => console.log(err.message)
       });
     }
+
+    this.authService.test().subscribe({
+      next: () => console.log('test successed'),
+      error: () => console.log('test failed')
+    })
+  }
+
+  public isExtensionMessageDisplayed(bool: boolean) {
+    this.extensionDisplayed = bool;
+  }
+
+  private displayFirstMessage() {
+    setTimeout(() => { // TODO de la merde
+      console.log(this.extensionDisplayed);
+      const message_extension = document.getElementById('install_extension_message');
+      const co2 = document.getElementById('co2_max');
+      if (!message_extension && !this.extensionDisplayed && co2)
+      {
+        this.getStorageDisplayFirstMessage = localStorage.getItem('first_message_display') === 'false' ? false : true;
+      }
+    }, 2500);
   }
 
   public login() {
@@ -66,7 +92,10 @@ export class HomeComponent {
                 this.handleToast(toastType.Success, 'Content de te revoir !');
                 this.signUpForm.reset();
                 this.userService.getProfile().subscribe({
-                  next: (val: any) => this.currentUser = new User(val.login),
+                  next: (val: any) => {
+                    this.currentUser = new User(val.login);
+                    this.displayFirstMessage();
+                  },
                   error: (err) => console.log(err.message)
                 });
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
@@ -90,6 +119,7 @@ export class HomeComponent {
               next: () => {
                 this.handleToast(toastType.Success, 'Bienvenue, installe toi et laisse faire l\'algorithme !');
                 this.signUpForm.reset();
+                this.displayFirstMessage();
                 this.currentUser = new User(val.login);
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
               },
@@ -127,6 +157,20 @@ export class HomeComponent {
     if (indicators) {
       this.showIndicatorsBool = !this.showIndicatorsBool;
       indicators.style.display = this.showIndicatorsBool ? 'flex' : 'none';
+    }
+  }
+
+  public closeMessageOverlay(): void {
+    const dont_show = document.getElementById('dont_show');
+    if (dont_show && (dont_show as HTMLInputElement).checked) {
+      localStorage.setItem('first_message_display', 'false');
+    }
+    const message = document.getElementById('first_message');
+    const overlay = document.getElementById('message_overlay');
+    if (message && overlay)
+    {
+      message.style.display = 'none';
+      overlay.style.display = 'none';
     }
   }
 
