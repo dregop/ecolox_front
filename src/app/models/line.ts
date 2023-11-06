@@ -21,7 +21,7 @@ export class Line {
     }
 
     public define(data: Co2ByOriginByTime[], x: any, y: any): any {
-        return d3.line<Co2ByOriginByTime>()
+        return d3.line<Co2ByOriginByTime>().curve(d3.curveCatmullRom.alpha(0.5))
             .x(function (d) {
                 if (d.date instanceof Date) {
                 return x(d.date.getTime());
@@ -36,7 +36,6 @@ export class Line {
         .style('stroke', this.color)
         .style('fill', 'none')
         .style("stroke-width", 2)
-        // .style("stroke-dasharray", ("3, 6"))  // <== This line here!!
         .attr('d', this.lineValues);
     }
 

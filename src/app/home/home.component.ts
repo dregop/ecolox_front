@@ -6,6 +6,7 @@ import { Co2ByOriginByTime } from '../main/main.component';
 import { User } from '../models/user';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../user/services/user.service';
+import { LineDataApiService } from '../services/line-data-api.service';
 
 enum toastType {
   Error,
@@ -35,7 +36,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
     this.marketStatusToPlot = this.marketStatus.slice(0, 20);
   }
 
-  constructor(private fb:FormBuilder, private authService: AuthService, private router: Router, private userService: UserService) {
+  constructor(private fb:FormBuilder, private authService: AuthService, private lineDataApi: LineDataApiService, private userService: UserService) {
     this.loginForm = this.fb.group({
       email: ['',[Validators.required]],
       password: ['',[Validators.required]]
@@ -60,10 +61,19 @@ export class HomeComponent implements OnInit, AfterContentInit {
       });
     }
 
-    this.authService.test().subscribe({
-      next: () => console.log('test successed'),
-      error: () => console.log('test failed')
-    })
+    // this.authService.test().subscribe({
+    //   next: (data) => console.log(data),
+    //   error: (err) => console.log(err)
+    // });
+        // Get global mean of all users
+        this.lineDataApi
+        .getGlobalData()
+        .subscribe({
+          next: (val) => {
+            if (val && val.data) {
+              console.log('# Get global data', JSON.parse(val.data));
+            }
+          }});
   }
 
   public isExtensionMessageDisplayed(bool: boolean) {
@@ -101,7 +111,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
               },
               error: (error) => {
-                if (error) {
+                if (error.error) {
                   this.handleToast(toastType.Error, error.error.text);
                 } else {
                   this.handleToast(toastType.Error, 'Dommage ça marche pas !');
@@ -124,7 +134,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
               },
               error: (error) => {
-                if (error) {
+                if (error.error) {
                   this.handleToast(toastType.Error, error.error.text);
                 } else {
                   this.handleToast(toastType.Error, 'Dommage ça marche pas !');

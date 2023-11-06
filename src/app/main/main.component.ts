@@ -71,7 +71,7 @@ export class MainComponent implements OnInit, AfterContentInit {
       next: (val) => {
         if (val && val.data) {
           this.dataDbCo2TimeSerie = JSON.parse(val.data);
-          this.formatDate(this.dataDbCo2TimeSerie);
+          this.graphService.formatDate(this.dataDbCo2TimeSerie);
           console.log('# Database data');
           console.log(this.dataDbCo2TimeSerie);
           this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
@@ -82,10 +82,9 @@ export class MainComponent implements OnInit, AfterContentInit {
       }
     });
 
-    const drawLineBdd = setInterval(() => {
+    setInterval(() => {
       if (this.chartProps) { 
         this.updateChart();
-        clearInterval(drawLineBdd);
       } else if (this.dataDbCo2TimeSerie.length > 0 ||this.dataExtensionCo2TimeSerie.length > 0){
         this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
         this.buildChart();
@@ -122,14 +121,13 @@ export class MainComponent implements OnInit, AfterContentInit {
           .attr("x", newWidth - 80 )
           .attr("y", newHeight -67);
 
-          // update movemove 
+          // update mouseemove 
           _this.chartProps.listeningRect
           .attr('width', newWidth)
           .attr('height', newHeight);
 
           _this.chartProps.width = newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right;
           _this.chartProps.height = newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom;
-  
         }
       }
     }
@@ -144,7 +142,6 @@ export class MainComponent implements OnInit, AfterContentInit {
       } else {
         this.dataExtensionCo2TimeSerie = e.detail;
       }
-      console.log(this.dataExtensionCo2TimeSerie);
       if (!this.isDataSaved) {
         this.isDataSaved = true;
 
@@ -169,7 +166,7 @@ export class MainComponent implements OnInit, AfterContentInit {
             if (val && val.data) {
 
               this.dataDbCo2TimeSerie = JSON.parse(val.data);
-              this.formatDate(this.dataDbCo2TimeSerie);
+              this.graphService.formatDate(this.dataDbCo2TimeSerie);
               console.log('# Database data');
               console.log(this.dataDbCo2TimeSerie);
             }
@@ -206,13 +203,6 @@ export class MainComponent implements OnInit, AfterContentInit {
       }
       this.fillIndicators();
 
-
-      if (this.dataSumDbExtensionCo2TimeSerie &&  this.chartProps) {
-        this.updateChart();
-      } else if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
-        console.log(this.dataSumDbExtensionCo2TimeSerie);
-        this.buildChart();
-      }
     });
 
     const zoomButton = document.getElementById('zoomButton');
@@ -256,7 +246,9 @@ export class MainComponent implements OnInit, AfterContentInit {
 
     const lastDayButton = document.getElementById('day');
     lastDayButton?.addEventListener('click', () => {
+      console.log(this.dataDbCo2TimeSerie);
       this.dataDbCo2TimeSerieFiltered = this.dataDbCo2TimeSerie.filter(d => new Date(d.date).getDate() === new Date().getDate());
+      console.log(this.dataDbCo2TimeSerieFiltered);
     });
 
     const allButton = document.getElementById('all');
@@ -271,19 +263,11 @@ export class MainComponent implements OnInit, AfterContentInit {
       next: (val) => {
         if (val && val.data) {
           this.dataGlobalMeanCo2TimeSerie = JSON.parse(val.data);
-          this.formatDate(this.dataGlobalMeanCo2TimeSerie);
+          this.graphService.formatDate(this.dataGlobalMeanCo2TimeSerie);
           console.log('# Get global data');
           console.log(this.dataGlobalMeanCo2TimeSerie);
         }
       }});
-  }
-
-  private formatDate(data: Co2ByOriginByTime[]) {
-    data.forEach(ms => {
-      if (typeof ms.date === 'string') {
-        ms.date = new Date(ms.date);
-      }
-    });
   }
 
   private saveData(data: any) {
@@ -308,44 +292,11 @@ export class MainComponent implements OnInit, AfterContentInit {
       });
   }
 
-  private scaleXYDomain(data: Co2ByOriginByTime[], x: any, y: any) {
-    let _this = this;
-    // Scale the range of the data
-    x.domain(
-      d3.extent(data, (d) => {
-        if (d.date instanceof Date) {
-          return (d.date as Date).getTime();
-        }
-        else {
-          return null;
-        }
-      }));
-      y.domain([data[0].co2 - this.marginYDomain, d3.max(data, function (d) { return d.co2 + _this.marginYDomain; })]); // define the range of y axis
-      // i want y axis to start at the first value recorded not zéro so that it is nicer to see
-  }
-
-  private reducePointsCo2TimeSerie(data: Co2ByOriginByTime[]): Co2ByOriginByTime[] { // very approximative, need to refactor this function
-    let i = 0;
-    let reducedData: Co2ByOriginByTime[] = [];
-    const dataGroupedCo2TimeSerie = d3.group(data, (d) => {return d.co2;});
-    if (dataGroupedCo2TimeSerie.size < 100 || data.length < 5000) {
-      return data;
-    }
-    const nbreToDivideBy = Math.trunc(dataGroupedCo2TimeSerie.size / (10 * Math.log(dataGroupedCo2TimeSerie.size)));
-    dataGroupedCo2TimeSerie.forEach((entry: any) => {
-      i++;
-      if (i % nbreToDivideBy === 0){
-        reducedData.push(entry[0]);
-      }
-    });
-    return reducedData;
-  }
-
   private buildChart() {
     console.log('i bluid chart');
     this.chartProps = {};
     
-    this.dataDrawnCo2TimeSerie = this.reducePointsCo2TimeSerie(this.dataSumDbExtensionCo2TimeSerie);
+    this.dataDrawnCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataSumDbExtensionCo2TimeSerie);
     console.log(this.dataDrawnCo2TimeSerie);
 
     // Set the dimensions of the canvas / graph
@@ -376,9 +327,9 @@ export class MainComponent implements OnInit, AfterContentInit {
 
     // Define the axes
     const xAxis = (g: any, x: any) => g
-    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(10));
+    .call(d3.axisBottom(x).tickSizeOuter(0).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(width / 80));
     var yAxis = (g: any, y: any) => g
-    .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0));
+    .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0).tickSize(-15000));
 
 
     svg.append("text")
@@ -390,22 +341,21 @@ export class MainComponent implements OnInit, AfterContentInit {
     .attr("dy", ".75em")
     .text("Co2(grammes)");
   
-    this.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y);
+    this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
 
     this.selectedColor = this.listColors[1];
   
     // Add lines group
     this.glines = svgBox.append("g").attr("id", "lines");
 
-
     /// DRAW GLOBAL MEAN LINE
     if (this.dataGlobalMeanCo2TimeSerie && this.dataGlobalMeanCo2TimeSerie.length > 0) {
+      this.dataGlobalMeanCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataGlobalMeanCo2TimeSerie);
       const valueline2: Line = new Line('line' + this.valueslines.length, this.dataGlobalMeanCo2TimeSerie,
       this.chartProps.x, this.chartProps.y, this.listColors[2]); // define the line
       valueline2.addToPath(this.glines); // add to path
       this.valueslines.push(valueline2);
     }
-
 
     // Add first line 
     let valueline: Line = new Line('line' + this.valueslines.length, this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.selectedColor); // create ligne
@@ -435,7 +385,8 @@ export class MainComponent implements OnInit, AfterContentInit {
       .attr('class', 'y axis')
       .call(yAxis, this.chartProps.y);
 
-    gy.selectAll("path,line").remove();
+      gy.selectAll(".tick line").style("stroke-dasharray", "5 5").style("opacity", "0.3");
+      gy.select('path').style("opacity", "0");
 
     // Setting the required objects in chartProps so they could be used to update the chart
     this.chartProps.svg = svg;
@@ -456,11 +407,12 @@ export class MainComponent implements OnInit, AfterContentInit {
       gx.call(xAxis, this.xz);
       gy.call(yAxis, this.yz);
 
-      gy.selectAll("path,line").remove();
+      gy.selectAll(".tick line").style("stroke-dasharray", "5 5").style("opacity", "0.3");
+      gy.select('path').style("opacity", "0");
 
       this.valueslines.forEach( (line: Line) => {
         line.update(this.chartProps.svgBox, this.xz, this.yz);
-        this.updateAvatarPosition(line.data, line.name, this.xz, this.yz);
+        this.graphService.updateAvatarPosition(line.data, line.name, this.chartProps, this.xz, this.yz);
       });
     })
     .scaleExtent([1, 20]);
@@ -552,8 +504,8 @@ export class MainComponent implements OnInit, AfterContentInit {
         // console.log('coef co2 : ', maxDistCo2FromMouseDisplay);
         
         if (getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouseDisplay ||getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouseDisplay) {
-          console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]));
-          console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]));
+          // console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]));
+          // console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]));
           onMouseLeave();
           return;
         }
@@ -586,21 +538,27 @@ export class MainComponent implements OnInit, AfterContentInit {
       //Grab the x and y position of our closest point,
       //shift our tooltip, and hide/show our tooltip appropriately
 
-      console.log('x : ', x);
-      console.log('y ', y);
+      // console.log('x : ', x);
+      // console.log('y ', y);
 
-      if (x < _this.chartProps.width * 1/10) {
+      if (x > _this.chartProps.width * 7/10 && y < _this.chartProps.height * 1/5) { // top right
+        _this.tooltip.style(
+          "transform",
+          `translate(` + `calc(-50% + ${x}px),` + `calc(+40% + ${y}px)` + `)`
+        );
+      }
+      else if (x < _this.chartProps.width * 1/10) { // left
         _this.tooltip.style(
           "transform",
           `translate(` + `calc(+40% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
         );
-      } else if (x > _this.chartProps.width * 4/5) {
+      } else if (x > _this.chartProps.width * 7/10) { // right
         _this.tooltip.style(
           "transform",
-          `translate(` + `calc(-40% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
+          `translate(` + `calc(-50% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
         );
       }
-      else if (y > _this.chartProps.height * 4/5) {
+      else if (y > _this.chartProps.height * 7/10) { // bottom
         _this.tooltip.style(
           "transform",
           `translate(` + `calc(-5% + ${x}px),` + `calc(-80% + ${y}px)` + `)`
@@ -641,7 +599,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     // Add avatars for each Lines
     this.valueslines.forEach(line => {
       this.addAvatar(line, svgBox, 'assets/avatar_' + line.name + '.png', line.name);
-      this.updateAvatarPosition(line.data, line.name);
+      this.graphService.updateAvatarPosition(line.data, line.name, this.chartProps);
     });
 
 
@@ -651,20 +609,11 @@ export class MainComponent implements OnInit, AfterContentInit {
     d3.select('.image_line0').style("opacity", 0);
   }
 
-  private getIndexNewLine() {
-    let index = 0;
-    let count = 0;
-    while( count < this.valueslines.length - 1) {
-      index += this.valueslines[count].data.length;
-      count++;
-    }
-    return index;
-  }
-
   updateChart() {
     if (this.onZoom) {
       return;
     }
+    console.log('update chart');
 
     if (this.dataDbCo2TimeSerieFiltered && this.dataDbCo2TimeSerieFiltered.length > 0) {
       this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerieFiltered];
@@ -680,7 +629,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     });
 
     // reduce nbre of points by 20 and put it in dataDrawnCo2TimeSerie
-    this.dataDrawnCo2TimeSerie = this.reducePointsCo2TimeSerie(this.dataDrawnCo2TimeSerie);
+    this.dataDrawnCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataDrawnCo2TimeSerie);
 
     this.dataExtensionCo2TimeSerie.forEach((entry) => {
       this.dataDrawnCo2TimeSerie.push(entry);
@@ -694,7 +643,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     }
 
 
-    this.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y);
+    this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
 
     // let lastOriginValue = this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].origin;
 
@@ -715,7 +664,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     // update all lines : 
     this.valueslines.forEach( (line: Line) => {
       line.update(this.chartProps.svgBox, this.chartProps.x, this.chartProps.y);
-      this.updateAvatarPosition(line.data, line.name);
+      this.graphService.updateAvatarPosition(line.data, line.name, this.chartProps);
     });
     console.log(this.valueslines);
 
@@ -727,7 +676,8 @@ export class MainComponent implements OnInit, AfterContentInit {
     this.chartProps.svgBox.select('.y.axis') // update y axis
       .call(this.chartProps.yAxis, this.chartProps.y);
 
-      this.chartProps.svgBox.select('.y.axis').selectAll("path,line").remove();
+    this.chartProps.svgBox.selectAll(".tick line").style("stroke-dasharray", "5 5").style("opacity", "0.3");
+    // this.chartProps.svgBox.select('path').style("opacity", "0");
 
   }
 
@@ -747,28 +697,6 @@ export class MainComponent implements OnInit, AfterContentInit {
     .attr('height', 25)
     .attr('x', pos.x + 7)
     .attr('y', pos.y - 13);
-  }
-
-  private updateAvatarPosition(dataTimeSerie: Co2ByOriginByTime[], lineName: string, xz?: any, yz?: any) {
-    const yAccessor = (d: Co2ByOriginByTime) => d.co2;
-    const xAccessor = (d: Co2ByOriginByTime) => d.date;
-
-    let xLastPos;
-    let yLastPos;
-    if (xz && yz) {
-      xLastPos = xz(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-      yLastPos = yz(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-    } else {
-      xLastPos = this.chartProps.x(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-      yLastPos = this.chartProps.y(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-    }
-
-    this.chartProps.svgBox.select('.circle_' + lineName)
-    .attr("cx", xLastPos)
-    .attr("cy", yLastPos);
-    this.chartProps.svgBox.select('.image_' + lineName)
-    .attr("x", xLastPos - 12)
-    .attr("y", yLastPos - 13);
   }
 
   public reset(): void {
