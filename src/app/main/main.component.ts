@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { Line } from '../models/line';
 import { LineDataApiService } from '../services/line-data-api.service';
 import { GraphService } from './graph.service';
+import { ToastService, toastType } from '../toast.service';
 
 export  class Co2ByOriginByTime {
   co2!: number;
@@ -26,7 +27,7 @@ export class MainComponent implements OnInit, AfterContentInit {
   public dataSumDbExtensionCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataDbCo2TimeSerie: Co2ByOriginByTime[] = [];
   public dataDbCo2TimeSerieFiltered: Co2ByOriginByTime[] = [];
-  private dataGlobalMeanCo2TimeSerie!: Co2ByOriginByTime[];
+  private dataGlobalMeanCo2TimeSerie: Co2ByOriginByTime[] = [];
   private chartProps: any;
   private glines: any;
   private valueslines: Line[] = [];
@@ -43,10 +44,11 @@ export class MainComponent implements OnInit, AfterContentInit {
   private GESgCO2ForOneChargedSmartphone = 8.3;
   private isDataSaved = false;
   public isExtensionMessageDisplayed = false;
+  public browserName: string = "Chrome";
 
   @Output() displayMessageExtension = new EventEmitter<boolean>();
 
-  constructor(private lineDataApi: LineDataApiService, private graphService: GraphService) {
+  constructor(private lineDataApi: LineDataApiService, private graphService: GraphService, public toastService: ToastService) {
   }
   ngAfterContentInit(): void {
     setTimeout(() => { //TODO de la belle merde
@@ -55,15 +57,59 @@ export class MainComponent implements OnInit, AfterContentInit {
         this.isExtensionMessageDisplayed = false;
       } else {
         this.displayMessageExtension.emit(true);
-        this.isExtensionMessageDisplayed = true;
+        const display = localStorage.getItem('install_extension_message_display');
+        if (display && display === 'false') {
+          this.isExtensionMessageDisplayed = false;
+        } else {
+          this.isExtensionMessageDisplayed = true;
+        }
       }
+      console.log(this.isExtensionMessageDisplayed);
     }, 2000);
   }
 
   ngOnInit(): void {
+
+    this.browserName = (function (agent) {        switch (true) {
+      case agent.indexOf("edge") > -1: return "MS Edge";
+      case agent.indexOf("edg/") > -1: return "Edge ( chromium based)";
+      case agent.indexOf("opr") > -1: return "Opera";
+      case agent.indexOf("chrome") > -1: return "Chrome";
+      case agent.indexOf("trident") > -1: return "MS IE";
+      case agent.indexOf("firefox") > -1: return "Mozilla Firefox";
+      case agent.indexOf("safari") > -1: return "Safari";
+      default: return "other";
+      }
+    })(window.navigator.userAgent.toLowerCase());
+    console.log(this.browserName)
+
     this.displayMessageExtension.emit(false);
 
     this.graphService.setD3Locale(); // initiate date for x graph 
+
+    const draw = setInterval(() => {
+      if (this.dataSumDbExtensionCo2TimeSerie.length > 0 && this.dataGlobalMeanCo2TimeSerie.length > 0){
+        this.buildChart();
+        clearInterval(draw);
+      }
+    }, 500);
+
+    // Get global mean of all users
+    this.lineDataApi
+    .getGlobalData()
+    .subscribe({
+
+      next: (val) => {
+        if (val && val.data) {
+          this.dataGlobalMeanCo2TimeSerie = JSON.parse(val.data);
+          this.graphService.formatDate(this.dataGlobalMeanCo2TimeSerie);
+          console.log('# Get global data');
+          console.log(this.dataGlobalMeanCo2TimeSerie);
+        }
+      },
+    error: (error) => {
+      console.log(error);
+  }});
 
     this.lineDataApi
     .getData()
@@ -77,19 +123,9 @@ export class MainComponent implements OnInit, AfterContentInit {
           this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
           this.fillIndicators();
         }
-
         this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
       }
     });
-
-    setInterval(() => {
-      if (this.chartProps) { 
-        this.updateChart();
-      } else if (this.dataDbCo2TimeSerie.length > 0 ||this.dataExtensionCo2TimeSerie.length > 0){
-        this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-        this.buildChart();
-      }
-    }, 2000);
 
     // Add an event listener that run the function when dimension change
     window.addEventListener('resize', updateOnResize);
@@ -102,21 +138,22 @@ export class MainComponent implements OnInit, AfterContentInit {
         const newHeight = document.getElementById('chart')?.clientHeight;
         if (newWidth && newHeight) {
           console.log('# on resize');
+          console.log(newWidth);
+          console.log(newHeight);
+
           _this.chartProps.svg
           .attr("viewBox", '0 0 ' +  newWidth + ' ' +newHeight );
 
           _this.chartProps.x.range([ 0, newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right ]);
           _this.chartProps.y.range([ newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom, 0]);
+
           _this.chartProps.svgBox.select('.x.axis') // update x axis
           .attr('transform', `translate(0,${newHeight  - _this.chartProps.margin.top - _this.chartProps.margin.bottom})`)
           .call(_this.chartProps.xAxis, _this.chartProps.x);
-
           _this.chartProps.svgBox.select('.y.axis') // update y axis
           .call(_this.chartProps.yAxis, _this.chartProps.y);
 
 
-          console.log(newWidth);
-          console.log(newHeight);
           _this.chartProps.svgBox.select('.arrow')
           .attr("x", newWidth - 80 )
           .attr("y", newHeight -67);
@@ -128,6 +165,8 @@ export class MainComponent implements OnInit, AfterContentInit {
 
           _this.chartProps.width = newWidth - _this.chartProps.margin.left - _this.chartProps.margin.right;
           _this.chartProps.height = newHeight - _this.chartProps.margin.top - _this.chartProps.margin.bottom;
+
+          _this.updateChart();
         }
       }
     }
@@ -137,71 +176,87 @@ export class MainComponent implements OnInit, AfterContentInit {
 
       console.log('# extension data');
       console.log(e.detail);
+
       if (!this.isDataSaved) {
         this.firstDataExtensionCo2TimeSerie = e.detail;
+        if (typeof this.firstDataExtensionCo2TimeSerie === 'string') {
+          this.firstDataExtensionCo2TimeSerie = JSON.parse(this.firstDataExtensionCo2TimeSerie);
+          this.graphService.formatDate(this.firstDataExtensionCo2TimeSerie);
+          console.log(this.firstDataExtensionCo2TimeSerie);
+        }
       } else {
         this.dataExtensionCo2TimeSerie = e.detail;
+        if (typeof this.dataExtensionCo2TimeSerie === 'string') {
+          this.dataExtensionCo2TimeSerie = JSON.parse(this.dataExtensionCo2TimeSerie);
+          this.graphService.formatDate(this.dataExtensionCo2TimeSerie);
+          console.log(this.dataExtensionCo2TimeSerie);
+        }
       }
-      if (!this.isDataSaved) {
-        this.isDataSaved = true;
+      if (this.firstDataExtensionCo2TimeSerie.length > 0 || this.dataExtensionCo2TimeSerie.length > 0) {
+        if (!this.isDataSaved) {
+          this.isDataSaved = true;
 
-        // IF AN OTHER BROWSER INSTANCE IS RUNNING
-        if (this.firstDataExtensionCo2TimeSerie && this.dataDbCo2TimeSerie && this.firstDataExtensionCo2TimeSerie.length > 5 && this.dataDbCo2TimeSerie.length > 0) {
-          if (this.firstDataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date || this.firstDataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
-            // We look at index 1 because it we look at index 0, the date of extension is always few second below dataDb. Probably because of the way we refresh extension data and we store in db
+          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
+          console.log(this.dataDbCo2TimeSerie);
+          console.log(this.firstDataExtensionCo2TimeSerie);
+  
+          // IF AN OTHER BROWSER INSTANCE IS RUNNING
+          if (this.dataDbCo2TimeSerie.length > 0 && this.firstDataExtensionCo2TimeSerie.length > 5 && ((this.firstDataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date) || (this.firstDataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2))) {
+            // We look at index 5 because it we look at index 0, the date of extension is always few second below dataDb. Probably because of the way we refresh extension data and we store in db
             console.log('Instance issue');
             this.firstDataExtensionCo2TimeSerie = [];
-          } 
-          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
+          }
+  
+          if (this.dataExtensionCo2TimeSerie.length > 5  && this.dataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date || this.dataExtensionCo2TimeSerie.length > 5 &&  this.dataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
+            console.log('this.dataExtensionCo2TimeSerie');
+            console.log(this.dataExtensionCo2TimeSerie);
+            this.dataExtensionCo2TimeSerie.map((x) => x.co2 =  this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2 + x.co2);
+          }
+  
+          this.lineDataApi
+          .getData()
+          .subscribe({
+            next: (val) => {
+  
+              if ((this.firstDataExtensionCo2TimeSerie && this.firstDataExtensionCo2TimeSerie.length > 0) || (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0)) {
+                this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+                this.firstDataExtensionCo2TimeSerie.forEach((entry) => {
+                  this.dataSumDbExtensionCo2TimeSerie.push(entry);
+                });
+              }
+        
+              if (val && val.data) {
+                this.updateData({
+                  'category': 'internet',
+                  'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
+                });
+              } else {
+                this.saveData({
+                  'category': 'internet',
+                  'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
+                });
+              }
+            },
+            error: (err) => console.log(err.message)
+          });
+        } else {
+          this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
+          this.firstDataExtensionCo2TimeSerie.forEach((entry) => {  // fill with data extension when you were not on the website
+            this.dataSumDbExtensionCo2TimeSerie.push(entry);
+          });
+          this.dataExtensionCo2TimeSerie.forEach((entry) => { // fill with data extension while you are on the website
+            this.dataSumDbExtensionCo2TimeSerie.push(entry);
+          });
         }
-
-        if (this.dataExtensionCo2TimeSerie.length > 5  && this.dataExtensionCo2TimeSerie[5].date < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].date || this.dataExtensionCo2TimeSerie.length > 5 &&  this.dataExtensionCo2TimeSerie[0].co2 + 15 < this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2) {
-          this.dataExtensionCo2TimeSerie.map((x) => x.co2 =  this.dataDbCo2TimeSerie[this.dataDbCo2TimeSerie.length - 1].co2 + x.co2);
+        this.fillIndicators();
+  
+        
+        if (this.chartProps && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
+          this.updateChart();
+        } else if (this.dataSumDbExtensionCo2TimeSerie.length > 0 && this.dataGlobalMeanCo2TimeSerie.length > 0) {
+          this.buildChart();
         }
-
-        this.lineDataApi
-        .getData()
-        .subscribe({
-          next: (val) => {
-            if (val && val.data) {
-
-              this.dataDbCo2TimeSerie = JSON.parse(val.data);
-              this.graphService.formatDate(this.dataDbCo2TimeSerie);
-              console.log('# Database data');
-              console.log(this.dataDbCo2TimeSerie);
-            }
-
-            if ((this.firstDataExtensionCo2TimeSerie && this.firstDataExtensionCo2TimeSerie.length > 0) || (this.dataDbCo2TimeSerie && this.dataDbCo2TimeSerie.length > 0)) {
-              this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-              this.firstDataExtensionCo2TimeSerie.forEach((entry) => {
-                this.dataSumDbExtensionCo2TimeSerie.push(entry);
-              });
-            }
-      
-            if (val && val.data) {
-              this.updateData({
-                'category': 'internet',
-                'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
-              });
-            } else {
-              this.saveData({
-                'category': 'internet',
-                'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
-              });
-            }
-          },
-          error: (err) => console.log(err.message)
-        });
-      } else {
-        this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-        this.firstDataExtensionCo2TimeSerie.forEach((entry) => {  // fill with data extension when you were not on the website
-          this.dataSumDbExtensionCo2TimeSerie.push(entry);
-        });
-        this.dataExtensionCo2TimeSerie.forEach((entry) => { // fill with data extension while you are on the website
-          this.dataSumDbExtensionCo2TimeSerie.push(entry);
-        });
       }
-      this.fillIndicators();
 
     });
 
@@ -209,11 +264,13 @@ export class MainComponent implements OnInit, AfterContentInit {
     zoomButton?.addEventListener('click', () => {
       if (this.zoom !== null) {
         if (zoomButton.className.includes('activated')) {
+          document.body.style.cursor =  "auto";
           zoomButton.className = 'btn-graph';
           zoomButton.title = 'Zoomer';
-          this.reset();
+          this.zoomTransform();
           this.chartProps.svgBox.on('.zoom', null);
         } else {
+          document.body.style.cursor =  "all-scroll";
           zoomButton.title = 'Désactiver le zoom';
           zoomButton.className = 'activated';
           this.chartProps.svgBox.call(this.zoom as any, d3.zoomIdentity);
@@ -225,11 +282,19 @@ export class MainComponent implements OnInit, AfterContentInit {
     const globalDataButton = document.getElementById('global_data');
     globalDataButton?.addEventListener('click', () => {
       if (globalDataButton.className.includes('activated')) {
+        this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
+        this.zoomTransform();
         globalDataButton.className = 'btn-graph';
         d3.select('.line.line0').style("opacity", 0);
         d3.select('.circle_line0').style("opacity", 0);
         d3.select('.image_line0').style("opacity", 0);
       } else {
+        const sumAllData = [...this.dataGlobalMeanCo2TimeSerie];
+        this.dataDrawnCo2TimeSerie.forEach((data) => {
+          sumAllData.push(data);
+        });
+        this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.marginYDomain);
+        this.zoomTransform();
         globalDataButton.className = 'activated';
         d3.select('.line.line0').style("opacity", 1);
         d3.select('.circle_line0').style("opacity", 1);
@@ -237,37 +302,18 @@ export class MainComponent implements OnInit, AfterContentInit {
       }
     });
 
-    const resetButton = document.getElementById('reset');
-    resetButton?.addEventListener('click', () => {
-      if (this.zoom !== null) {
-        this.reset();
-      }
-    });
-
     const lastDayButton = document.getElementById('day');
     lastDayButton?.addEventListener('click', () => {
-      console.log(this.dataDbCo2TimeSerie);
       this.dataDbCo2TimeSerieFiltered = this.dataDbCo2TimeSerie.filter(d => new Date(d.date).getDate() === new Date().getDate());
-      console.log(this.dataDbCo2TimeSerieFiltered);
+      if (this.dataDbCo2TimeSerieFiltered.length === 0) {
+        this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
+      }
     });
 
     const allButton = document.getElementById('all');
     allButton?.addEventListener('click', () => {
       this.dataDbCo2TimeSerieFiltered = [];
     });
-
-    // Get global mean of all users
-    this.lineDataApi
-    .getGlobalData()
-    .subscribe({
-      next: (val) => {
-        if (val && val.data) {
-          this.dataGlobalMeanCo2TimeSerie = JSON.parse(val.data);
-          this.graphService.formatDate(this.dataGlobalMeanCo2TimeSerie);
-          console.log('# Get global data');
-          console.log(this.dataGlobalMeanCo2TimeSerie);
-        }
-      }});
   }
 
   private saveData(data: any) {
@@ -329,17 +375,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     const xAxis = (g: any, x: any) => g
     .call(d3.axisBottom(x).tickSizeOuter(0).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(width / 80));
     var yAxis = (g: any, y: any) => g
-    .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0).tickSize(-15000));
-
-
-    svg.append("text")
-    .attr("class", "y label")
-    .attr("text-anchor", "middle")
-    .attr("x", 100)
-    .attr("y", 300)
-    .style("font-size", "12px")
-    .attr("dy", ".75em")
-    .text("Co2(grammes)");
+    .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0).tickSize(-150000));
   
     this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
 
@@ -369,8 +405,6 @@ export class MainComponent implements OnInit, AfterContentInit {
       .attr('transform', `translate(0,${height})`)
       .call(xAxis, this.chartProps.x);
 
-      console.log(width);
-      console.log(height);
       svgBox.append('image')
       .attr("class", "arrow")
       .attr('xlink:href', "assets/arrow.png")
@@ -396,6 +430,15 @@ export class MainComponent implements OnInit, AfterContentInit {
     this.chartProps.height = height;
     this.chartProps.width = width;
     this.chartProps.margin = margin;
+
+    svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "middle")
+    .attr("x", 100)
+    .attr("y", this.chartProps.height / 2)
+    .style("font-size", "12px")
+    .attr("dy", ".75em")
+    .text("Co2(grammes)");
 
     this.zoom = d3.zoom()
     .on('zoom', (event) => {
@@ -643,7 +686,16 @@ export class MainComponent implements OnInit, AfterContentInit {
     }
 
 
-    this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
+    const globalDataButton = document.getElementById('global_data');
+    if (globalDataButton?.className.includes('activated')) {
+      const sumAllData = [...this.dataGlobalMeanCo2TimeSerie];
+      this.dataDrawnCo2TimeSerie.forEach((data) => {
+        sumAllData.push(data);
+      });
+      this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.marginYDomain);
+    } else {
+      this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
+    }
 
     // let lastOriginValue = this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].origin;
 
@@ -699,13 +751,17 @@ export class MainComponent implements OnInit, AfterContentInit {
     .attr('y', pos.y - 13);
   }
 
-  public reset(): void {
+  public zoomTransform(): void {
     this.chartProps.svgBox.transition()
       .duration(750)
       .call(this.zoom.transform, d3.zoomIdentity);
   }
 
   public closeMessageOverlay(): void {
+    const dont_show = document.getElementById('dont_show');
+    if (dont_show && (dont_show as HTMLInputElement).checked) {
+      localStorage.setItem('install_extension_message_display', 'false');
+    }
     const message = document.getElementById('install_extension_message');
     if (message)
     {
@@ -717,7 +773,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     const co2_max = document.getElementById('co2_max');
     const kmByCar_max = document.getElementById('kmByCar_max');
     const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
-    if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
+    if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 2) {
       if (co2_max) {
         co2_max.innerHTML = (this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
       }

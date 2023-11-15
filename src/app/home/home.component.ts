@@ -7,11 +7,7 @@ import { User } from '../models/user';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../user/services/user.service';
 import { LineDataApiService } from '../services/line-data-api.service';
-
-enum toastType {
-  Error,
-  Success
-}
+import { ToastService, toastType } from '../toast.service';
 
 @Component({
   selector: 'app-home',
@@ -26,7 +22,6 @@ export class HomeComponent implements OnInit, AfterContentInit {
   loginForm!:FormGroup;
   signUpForm!:FormGroup;
   currentUser!: User;
-  toastMessage!: string;
   showIndicatorsBool: boolean = false;
   public getStorageDisplayFirstMessage = false;
   public extensionDisplayed!: boolean;
@@ -36,7 +31,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
     this.marketStatusToPlot = this.marketStatus.slice(0, 20);
   }
 
-  constructor(private fb:FormBuilder, private authService: AuthService, private lineDataApi: LineDataApiService, private userService: UserService) {
+  constructor(private fb:FormBuilder, private authService: AuthService, private lineDataApi: LineDataApiService, private userService: UserService, public toastService: ToastService) {
     this.loginForm = this.fb.group({
       email: ['',[Validators.required]],
       password: ['',[Validators.required]]
@@ -99,7 +94,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
         this.authService.login(val.email, val.password)
             .subscribe({
               next: (data) => {
-                this.handleToast(toastType.Success, 'Content de te revoir !');
+                this.toastService.handleToast(toastType.Success, 'Content de te revoir !');
                 this.signUpForm.reset();
                 this.userService.getProfile().subscribe({
                   next: (val: any) => {
@@ -112,9 +107,9 @@ export class HomeComponent implements OnInit, AfterContentInit {
               },
               error: (error) => {
                 if (error.error) {
-                  this.handleToast(toastType.Error, error.error.text);
+                  this.toastService.handleToast(toastType.Error, error.error.text);
                 } else {
-                  this.handleToast(toastType.Error, 'Dommage ça marche pas !');
+                  this.toastService.handleToast(toastType.Error, 'Dommage ça marche pas !');
                 }
               }
             });
@@ -127,7 +122,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
         this.authService.signUp(val.email, val.login, val.password)
             .subscribe({
               next: () => {
-                this.handleToast(toastType.Success, 'Bienvenue, installe toi et laisse faire l\'algorithme !');
+                this.toastService.handleToast(toastType.Success, 'Bienvenue, installe toi et laisse faire l\'algorithme !');
                 this.signUpForm.reset();
                 this.displayFirstMessage();
                 this.currentUser = new User(val.login);
@@ -135,14 +130,14 @@ export class HomeComponent implements OnInit, AfterContentInit {
               },
               error: (error) => {
                 if (error.error) {
-                  this.handleToast(toastType.Error, error.error.text);
+                  this.toastService.handleToast(toastType.Error, error.error.text);
                 } else {
-                  this.handleToast(toastType.Error, 'Dommage ça marche pas !');
+                  this.toastService.handleToast(toastType.Error, 'Dommage ça marche pas !');
                 }
               }
             });
     } else {
-      this.handleToast(toastType.Error, 'Email Invalide ? Sinon minimum 3 lettres pour le pseudo et 6 pour le mot de passe');
+      this.toastService.handleToast(toastType.Error, 'Email Invalide ? Sinon minimum 3 lettres pour le pseudo et 6 pour le mot de passe');
     }
   }
 
@@ -150,16 +145,6 @@ export class HomeComponent implements OnInit, AfterContentInit {
     this.authService.logout();
     this.isAuthenticated = this.authService.isLoggedIn();
     this.ngOnDestroy();
-  }
-
-  public handleToast(type: toastType, message: string) {
-    const toastDiv = document.getElementById('toast');
-    if (toastDiv) {
-      toastDiv.className = "show";
-      this.toastMessage = message;
-      toastDiv.style.backgroundColor = type === toastType.Error ? 'rgb(228, 60, 60)' : 'rgb(175, 224, 175)';
-      setTimeout(function(){ toastDiv.className = toastDiv.className.replace("show", ""); }, 4000);
-    }
   }
 
   public showIndicatorsMobile() {
