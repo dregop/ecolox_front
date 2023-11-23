@@ -225,7 +225,7 @@ export class MainComponent implements OnInit, AfterContentInit {
                 });
               }
         
-              if (val && val.data) {
+              if (val && val.data && this.dataDbCo2TimeSerie.length > 0) {
                 this.updateData({
                   'category': 'internet',
                   'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
@@ -284,6 +284,7 @@ export class MainComponent implements OnInit, AfterContentInit {
       if (globalDataButton.className.includes('activated')) {
         this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.marginYDomain);
         this.zoomTransform();
+        this.chartProps.svgBox.on('.zoom', null);
         globalDataButton.className = 'btn-graph';
         d3.select('.line.line0').style("opacity", 0);
         d3.select('.circle_line0').style("opacity", 0);
@@ -295,6 +296,7 @@ export class MainComponent implements OnInit, AfterContentInit {
         });
         this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.marginYDomain);
         this.zoomTransform();
+        this.chartProps.svgBox.on('.zoom', null);
         globalDataButton.className = 'activated';
         d3.select('.line.line0').style("opacity", 1);
         d3.select('.circle_line0').style("opacity", 1);
@@ -304,15 +306,44 @@ export class MainComponent implements OnInit, AfterContentInit {
 
     const lastDayButton = document.getElementById('day');
     lastDayButton?.addEventListener('click', () => {
+      console.log('Range : last day');
+      let zoomActif = false;
+      if (this.onZoom) {
+        zoomActif = true;
+        this.onZoom = false;
+      }
       this.dataDbCo2TimeSerieFiltered = this.dataDbCo2TimeSerie.filter(d => new Date(d.date).getDate() === new Date().getDate());
       if (this.dataDbCo2TimeSerieFiltered.length === 0) {
         this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
+      }
+      this.updateChart();
+      lastDayButton.className = 'activated';
+      if (allButton) {
+        allButton.className = 'btn-graph';
+      }
+      if (zoomActif) {
+        this.onZoom = true;
       }
     });
 
     const allButton = document.getElementById('all');
     allButton?.addEventListener('click', () => {
+      console.log('Range : all');
+      let zoomActif = false;
+      if (this.onZoom) {
+        zoomActif = true;
+        this.onZoom = false;
+      }
       this.dataDbCo2TimeSerieFiltered = [];
+      this.updateChart();
+      this.fillIndicators();
+      allButton.className = 'activated';
+      if (lastDayButton) {
+        lastDayButton.className = 'btn-graph';
+      }
+      if (zoomActif) {
+        this.onZoom = true;
+      }
     });
   }
 
@@ -444,6 +475,7 @@ export class MainComponent implements OnInit, AfterContentInit {
     .on('zoom', (event) => {
       console.log('i zoom');
   
+
       this.xz = event.transform.rescaleX(this.chartProps.x);
       this.yz = event.transform.rescaleY(this.chartProps.y);
 
@@ -687,7 +719,8 @@ export class MainComponent implements OnInit, AfterContentInit {
 
 
     const globalDataButton = document.getElementById('global_data');
-    if (globalDataButton?.className.includes('activated')) {
+    const allButton = document.getElementById('all');
+    if (globalDataButton?.className.includes('activated') && allButton?.className.includes('activated')) {
       const sumAllData = [...this.dataGlobalMeanCo2TimeSerie];
       this.dataDrawnCo2TimeSerie.forEach((data) => {
         sumAllData.push(data);

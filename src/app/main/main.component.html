@@ -130,7 +130,7 @@
 
         </div>
     </div>
-    <div id="filters" class="absolute right-0 p-2 flex flex-col mt-80">
+    <div id="filters" class="absolute right-0 p-2 flex flex-col top-1/2">
         <div>
             <button class="btn-graph" id="zoomButton" title="Zoomer">
                 <img src="../../assets/zoom.svg" alt="Zoom" width="25px" height="25px">
@@ -141,7 +141,10 @@
         </div>
         <div>
             <button class="btn-graph" id="day" title="Données du dernier jour">Aujourd'hui</button>
-            <button class="btn-graph" id="all" title="Données depuis le début">Début</button>
+            <button class="btn-graph activated" id="all" title="Données depuis le début">Début</button>
+        </div>
+        <div class="text-left">
+            <toggle-button [buttonName]="'FILTRES'" [classNameToToggle]="'btn-graph'"></toggle-button>
         </div>
     </div>
 </div>

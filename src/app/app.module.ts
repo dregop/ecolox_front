@@ -13,6 +13,7 @@ import { AuthInterceptor } from './auth.interceptor';
 import { LegalMentionsComponent } from './legal-mentions/legal-mentions.component';
 import { HomeComponent } from './home/home.component';
 import { GraphLegendComponent } from './main/graph-legend/graph-legend.component';
+import { ToggleButtonComponent } from './customComponents/toggle-button/toggle-button.component';
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import { GraphLegendComponent } from './main/graph-legend/graph-legend.component
     UserComponent,
     LegalMentionsComponent,
     HomeComponent,
-    GraphLegendComponent
+    GraphLegendComponent,
+    ToggleButtonComponent
   ],
   imports: [
     BrowserModule,

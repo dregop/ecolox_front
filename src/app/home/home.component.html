@@ -13,7 +13,7 @@
   </div>
 
 
-  <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center">
+  <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center lg:h-14 h-10 w-full">
     <app-banner></app-banner>      
     <ng-container *ngIf="this.currentUser && isAuthenticated">
       <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
@@ -41,9 +41,13 @@
       <span id="chargedSmartphones_max"></span>
     </div>
     </div>
-    <div class="absolute left-2">
-      <img src="../../assets/ecobuddy-nametag-alpha.png" alt="Eco Buddy" class="lg:w-64 w-40">
+    <div class="absolute left-0 mt-1">
+      <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">
     </div>
+    <!-- <div class="absolute left-2">
+      <img src="../../assets/ecobuddy-nametag-alpha.png" alt="Eco Buddy" class="lg:w-64 w-40">
+    </div> -->
+    
     
     <!-- <button title="Signaler un bug">
       <img src="../../assets/bug.svg" alt="Bug" class="relative right-36" width="20px" height="20px">
@@ -62,7 +66,7 @@
 <ng-template #unAuthenticated>
   <div class="flex lg:flex-row flex-col items-center pl-8 pr-8">
     <div class="basis-1/2 lg:mr-10 text-lg">
-      <img src="../assets/ecobuddy_logo.png" alt="Logo Eco Buddy" class="lg:w-2/5 w-3/5 m-auto mb-1"/>
+      <img src="../assets/ecobuddy_logo_2.png" alt="Logo Eco Buddy" class="lg:w-3/5 w-3/5 m-auto mb-1"/>
       <p class="text-justify">
         Eco Buddy, le site pour suivre en temps réel ses émissions de Co<sub>2</sub>e (c-a-d l'ensemble des gaz à effet de serre émis, rapporté à la pollution du Co<sub>2</sub>
         <a href="https://fr.wikipedia.org/wiki/%C3%89quivalent_CO2" title="Définition Wikipédia"><img style="width: 20px;display: inline;" src="../assets/info-icon.svg" alt="Définition Wikipédia"/></a>).
