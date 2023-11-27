@@ -141,6 +141,27 @@ export class HomeComponent implements OnInit, AfterContentInit {
     }
   }
 
+  public forgotPassword() {
+    const val = this.loginForm.value;
+    if (val.email) {
+        this.authService.forgotPasswordSendEmail(val.email)
+            .subscribe({
+              next: () => {
+                this.toastService.handleToast(toastType.Success, 'Email envoyé à l\'adresse email saisie');
+              },
+              error: (error) => {
+                if (error.error) {
+                  this.toastService.handleToast(toastType.Error, error.error.text);
+                } else {
+                  this.toastService.handleToast(toastType.Error, 'Dommage ça marche pas !');
+                }
+              }
+            });
+    } else {
+      this.toastService.handleToast(toastType.Error, 'Email Invalide');
+    }
+  }
+
   public logout() {
     this.authService.logout();
     this.isAuthenticated = this.authService.isLoggedIn();

@@ -55,6 +55,14 @@ export class AuthService {
           );
     }
 
+    forgotPasswordSendEmail(email: string) {
+        return this.http.post<any>(API_URL + '/forgot_password', {email});
+    }
+
+    resetPassword(newPwd: string, token: string) {
+        return this.http.post<any>(API_URL + '/reset_password/' + token, {password: newPwd});
+    }
+
     test(): Observable<any> {
         return this.http
           .post(`${API_URL}/test`, {});

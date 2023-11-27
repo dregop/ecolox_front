@@ -51,7 +51,7 @@ export class MainComponent implements OnInit, AfterContentInit {
   constructor(private lineDataApi: LineDataApiService, private graphService: GraphService, public toastService: ToastService) {
   }
   ngAfterContentInit(): void {
-    setTimeout(() => { //TODO de la belle merde
+    setTimeout(() => { //FIXME: de la belle merde
       if (this.isDataSaved) {
         this.displayMessageExtension.emit(false);
         this.isExtensionMessageDisplayed = false;
@@ -355,8 +355,8 @@ export class MainComponent implements OnInit, AfterContentInit {
           console.log('data saved to db');
         },
         error: (err) => console.log(err.message)
-      });
-    }
+    });
+  }
 
   private updateData(data: any) {
     this.lineDataApi

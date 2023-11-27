@@ -14,6 +14,7 @@ import { LegalMentionsComponent } from './legal-mentions/legal-mentions.componen
 import { HomeComponent } from './home/home.component';
 import { GraphLegendComponent } from './main/graph-legend/graph-legend.component';
 import { ToggleButtonComponent } from './customComponents/toggle-button/toggle-button.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import { ToggleButtonComponent } from './customComponents/toggle-button/toggle-b
     LegalMentionsComponent,
     HomeComponent,
     GraphLegendComponent,
-    ToggleButtonComponent
+    ToggleButtonComponent,
+    ResetPasswordComponent
   ],
   imports: [
     BrowserModule,

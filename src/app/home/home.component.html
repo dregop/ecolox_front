@@ -13,7 +13,7 @@
   </div>
 
 
-  <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center lg:h-14 h-10 w-full">
+  <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center lg:h-12 h-10 w-full">
     <app-banner></app-banner>      
     <ng-container *ngIf="this.currentUser && isAuthenticated">
       <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
@@ -89,6 +89,7 @@
           <input type="email" formControlName="email" placeholder="Email"/>
           <input type="password" formControlName="password" placeholder="Mot de passe"/>
           <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 text-lg hover:bg-amber-400 active:bg-amber-500 shadow-2xl" (click)="login()">Connexion</button>
+          <a href="#" class="text-sm ml-10 underline" (click)="forgotPassword()">Mot de passe oublié</a>
         </fieldset>
       </form>
     
