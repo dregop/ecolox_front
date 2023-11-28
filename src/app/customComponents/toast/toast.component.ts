@@ -7,12 +7,22 @@ export enum toastType {
 }
 
 @Component({
-  selector: 'app-toast',
+  selector: 'toast',
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.scss']
 })
 export class ToastComponent {
   public toastMessage = '';
+  public toastMessageContent: any = {
+    toastWelcome : "Content de te revoir !",    
+    toastError : "Dommage ça marche pas !",
+    toastFirstWelcome : "Bienvenue, installe toi et laisse faire l\'algorithme !",
+    toastIncorrectWorld : "Email Invalide ? Sinon minimum 3 lettres pour le pseudo et 6 pour le mot de passe",
+    toastEmailSent : "Email envoyé à l\'adresse email saisie",
+    toastInvalidEmail : "Email Invalide",
+    toastNoDataToday : "Pas de donnée enregistrée disponible pour aujourd\'hui",
+  };
+
   constructor() {}
  
   public handleToast(type: toastType, message: string) {
@@ -34,4 +44,5 @@ export class ToastComponent {
         setTimeout(function(){ toastDiv.className = toastDiv.className.replace("show", ""); }, 4000);
       }
     }
+
 }
