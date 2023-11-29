@@ -1,0 +1,11 @@
+<button class="toggleButton">
+    <div class="flex flex-row items-center">
+        <div>
+            <img src="../../assets/hide_menu.svg" alt="Cacher menu" height="25px" width="25px" class="inline" *ngIf="!hideMenu" (click)="toggleMenu()">
+            <img src="../../assets/show_menu.svg" alt="Montrer menu" height="25px" width="25px" class="inline" *ngIf="hideMenu" (click)="toggleMenu()" title="{{buttonName}}">
+        </div>
+        <div class="text-left font-semibold text-xs">
+            <span *ngIf="hideMenu">{{buttonName}}</span>
+        </div>
+    </div>
+</button>
