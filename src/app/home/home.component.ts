@@ -7,7 +7,7 @@ import { User } from '../models/user';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../user/services/user.service';
 import { LineDataApiService } from '../services/line-data-api.service';
-import { ToastService, toastType } from '../toast.service';
+import { ToastService, toastType } from '../services/toast.service';
 
 @Component({
   selector: 'app-home',

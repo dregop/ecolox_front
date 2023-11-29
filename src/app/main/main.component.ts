@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { Line } from '../models/line';
 import { LineDataApiService } from '../services/line-data-api.service';
 import { GraphService } from './graph.service';
-import { ToastService, toastType } from '../toast.service';
+import { ToastService, toastType } from '../services/toast.service';
 
 export  class Co2ByOriginByTime {
   co2!: number;
@@ -306,6 +306,7 @@ export class MainComponent implements OnInit, AfterContentInit {
 
     const lastDayButton = document.getElementById('day');
     lastDayButton?.addEventListener('click', () => {
+      this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
       console.log('Range : last day');
       let zoomActif = false;
       if (this.onZoom) {
@@ -314,7 +315,7 @@ export class MainComponent implements OnInit, AfterContentInit {
       }
       this.dataDbCo2TimeSerieFiltered = this.dataDbCo2TimeSerie.filter(d => new Date(d.date).getDate() === new Date().getDate());
       if (this.dataDbCo2TimeSerieFiltered.length === 0) {
-        this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
+
       }
       this.updateChart();
       lastDayButton.className = 'activated';

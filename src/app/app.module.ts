@@ -15,6 +15,7 @@ import { HomeComponent } from './home/home.component';
 import { GraphLegendComponent } from './main/graph-legend/graph-legend.component';
 import { ToggleButtonComponent } from './customComponents/toggle-button/toggle-button.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { ToastComponent } from './customComponents/toast/toast.component';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
     HomeComponent,
     GraphLegendComponent,
     ToggleButtonComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ToastComponent
   ],
   imports: [
     BrowserModule,
