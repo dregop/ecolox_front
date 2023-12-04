@@ -1,0 +1,45 @@
+<div class="flex flex-row">
+    <div #chart id="chart" class="basis-11/12">
+        <div id="tooltip" class="tooltip w-72">
+            <div class="tooltip-date flex flex-col">
+                <span id="start_date"></span>
+                <span id="date"></span>
+            </div>
+            <div class="tooltip-origin">
+                <span id="origin"></span>
+            </div>
+            <div class="tooltip-co2" class="flex flex-row items-center w-4/5 mt-2 m-auto text-base">
+                <img src="../../assets/co2.svg" height="50px" width="50px" alt="Co2" class="mr-1"/>
+           <span id="co2" class="text-red-500"></span><span class="ml-1"> émis</span>
+            </div>
+            <span class="underline underline-offset-2">Equivaut à : </span>
+            <div class="flex flex-row mt-2">
+                <div class="basis-1/2 flex flex-row items-center">
+                    <img src="../../assets/car.svg" width="35px" height="35px" alt="Voiture" class="mr-2"/>
+                    <span id="kmByCar"></span>
+                </div>
+                <div class="basis-1/2 flex flex-row items-center">
+                    <img src="../../assets/phone.svg" width="38px" height="38px" alt="Smartphones"/>
+                    <span id="chargedSmartphones"></span>
+                </div>
+    </div>
+    
+        </div>
+    </div>
+    <div id="filters" class="absolute right-0 p-2 flex flex-col top-1/2">
+        <div>
+            <button class="btn-graph" id="zoomButton" title="Zoomer">
+                <img src="../../assets/zoom.svg" alt="Zoom" width="25px" height="25px">
+            </button>
+            <button class="btn-graph" id="global_data" title="Données du dernier jour">
+                <img src="../../assets/earth.svg" width="25px" height="25px" alt="Bouton moyenne globale" title="Données moyennes de tous les utilisateurs">
+            </button>
+        </div>
+        <div>
+            <button class="btn-graph" id="day" title="Données du dernier jour">Aujourd'hui</button>
+            <button class="btn-graph activated" id="all" title="Données depuis le début">Début</button>
+        </div>
+        <div class="text-left">
+            <toggle-button [buttonName]="'FILTRES'" [classNameToToggle]="'btn-graph'"></toggle-button>
+        </div>
+    </div>   

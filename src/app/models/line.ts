@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { Co2ByOriginByTime } from "../main/main.component";
+import { Co2ByOriginByTime } from "../chart/chart.component";
 
 export class Line {
     public name: string;

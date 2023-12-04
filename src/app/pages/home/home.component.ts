@@ -2,12 +2,12 @@ import { AfterContentInit, Component, OnInit } from '@angular/core';
 import {Subscription} from 'rxjs';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Co2ByOriginByTime } from '../main/main.component';
-import { User } from '../models/user';
-import { AuthService } from '../services/auth.service';
-import { UserService } from '../user/services/user.service';
-import { LineDataApiService } from '../services/line-data-api.service';
-import { ToastService, toastType } from '../toast.service';
+import { User } from '../../models/user';
+import { AuthService } from '../../services/auth.service';
+import { LineDataApiService } from '../../chart/services/line-data-api.service';
+import { Co2ByOriginByTime } from '../../chart/chart.component';
+import { ToastService, toastType } from '../../services/toast.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-home',

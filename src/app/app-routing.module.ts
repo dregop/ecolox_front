@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { LegalMentionsComponent } from './legal-mentions/legal-mentions.component';
-import { HomeComponent } from './home/home.component';
-import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { LegalMentionsComponent } from './pages/legal-mentions/legal-mentions.component';
+import { HomeComponent } from './pages/home/home.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/accueil', pathMatch: 'full' },

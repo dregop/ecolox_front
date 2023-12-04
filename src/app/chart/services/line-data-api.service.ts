@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {Observable, throwError, catchError, Subject, async } from 'rxjs';
-import {API_URL} from '../../environments/env.dev';
-import { Co2ByOriginByTime } from '../main/main.component';
+import {API_URL} from '../../../environments/env.dev';
+import { Co2ByOriginByTime } from '../chart.component';
 
 @Injectable({
   providedIn: 'root'
