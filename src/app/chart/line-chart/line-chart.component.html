@@ -22,8 +22,8 @@
                     <img src="../../assets/phone.svg" width="38px" height="38px" alt="Smartphones"/>
                     <span id="chargedSmartphones"></span>
                 </div>
-</div>
-
+    </div>
+    
         </div>
     </div>
     <div id="filters" class="absolute right-0 p-2 flex flex-col top-1/2">
@@ -42,26 +42,4 @@
         <div class="text-left">
             <toggle-button [buttonName]="'FILTRES'" [classNameToToggle]="'btn-graph'"></toggle-button>
         </div>
-    </div>
-</div>
-
-<div id="install_extension_message" class="absolute top-1/3 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 lg:p-4 lg:pl-10 p-5 p-12 m-auto"  *ngIf="isExtensionMessageDisplayed">
-    <div class="w-full text-center rounded-lg bg-lime-400 shadow-2xl border-2 border-slate-300 p-4 text-slate-800 z-50 text-sm font-semibold">
-        <p *ngIf="browserName === 'Mozilla Firefox'"><a href="https://addons.mozilla.org/fr/firefox/addon/ecobuddy/" class="text-blue-700">Installe l'extension pour Firefox</a> et commence à suivre ton empreinte carbonne ! <br>
-            Une fois l'extension installée, actualise la page s'il te plait.
-        </p>
-        <p *ngIf="browserName === 'Chrome'"><a href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" class="text-blue-700">Installe l'extension pour Chrome</a> et commence à suivre ton empreinte carbonne ! <br>
-            Une fois l'extension installée, actualise la page s'il te plait.
-        </p>
-
-        <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
-        <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../assets/close.svg" width="40"></button>
-        <br>
-        <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
-        <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
-    </div>
-</div>
-
-<div id="toast">
-    <span>{{ toastService.toastMessage }}</span>
-</div>
+    </div>   

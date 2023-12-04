@@ -38,13 +38,18 @@ input.ng-invalid.ng-touched {
     text-align: center;
     padding: 5px;
     font-weight: 600;
+    &.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.3s, fadeout 0.5s 3.7s;
+        animation: fadein 0.3s, fadeout 0.5s 3.7s;
+    }
 }
 
-#toast.show {
-    visibility: visible;
-    -webkit-animation: fadein 0.3s, fadeout 0.5s 3.7s;
-    animation: fadein 0.3s, fadeout 0.5s 3.7s;
-}
+//#toast.show {
+//    visibility: visible;
+//    -webkit-animation: fadein 0.3s, fadeout 0.5s 3.7s;
+//    animation: fadein 0.3s, fadeout 0.5s 3.7s;
+//}
 
 /* Animations to fade the toast in and out */
 @-webkit-keyframes fadein {

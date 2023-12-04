@@ -8,7 +8,7 @@
       <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
   
       <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
-      <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../assets/close.svg" width="40"></button>
+      <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
     </div>
   </div>
 
@@ -17,10 +17,10 @@
     <app-banner></app-banner>      
     <ng-container *ngIf="this.currentUser && isAuthenticated">
       <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
-        <img src="../../assets/logout.svg" width="30px" height="30px">
+        <img src="../../../assets/logout.svg" width="30px" height="30px">
       </a>
       <div class="h-full font-bold text-slate-600 flex flex-row border-l-4 border-indigo-500 bg-stone-400 items-center" (click)="showIndicatorsMobile()">
-        <img src="../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
+        <img src="../../../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
         <span class=" pl-1 pr-2">{{ this.currentUser.getName() }}</span>
       </div>
       <div id="banner_indicators" class="flex flex-row-reverse items-center pr-1">
@@ -59,7 +59,7 @@
           <app-menu></app-menu>
       </div>
       <div id="main">
-        <app-main (displayMessageExtension)="isExtensionMessageDisplayed($event)"></app-main>
+        <chart (displayMessageExtension)="isExtensionMessageDisplayed($event)"></chart>
       </div>
   </div>
 </ng-container>
