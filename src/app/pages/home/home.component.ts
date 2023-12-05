@@ -22,7 +22,6 @@ export class HomeComponent implements OnInit, AfterContentInit {
   loginForm!:FormGroup;
   signUpForm!:FormGroup;
   currentUser!: User;
-  showIndicatorsBool: boolean = false;
   public getStorageDisplayFirstMessage = false;
   public extensionDisplayed!: boolean;
 
@@ -51,7 +50,10 @@ export class HomeComponent implements OnInit, AfterContentInit {
     this.isAuthenticated = this.authService.isLoggedIn();
     if (this.isAuthenticated) {
       this.userService.getProfile().subscribe({
-        next: (val: any) => this.currentUser = new User(val.login),
+        next: (val: any) => {
+          this.currentUser = new User(val.login);
+          this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
+        },
         error: (err) => console.log(err.message)
       });
     }
@@ -60,15 +62,19 @@ export class HomeComponent implements OnInit, AfterContentInit {
     //   next: (data) => console.log(data),
     //   error: (err) => console.log(err)
     // });
-        // Get global mean of all users
-        this.lineDataApi
-        .getGlobalData()
-        .subscribe({
-          next: (val) => {
-            if (val && val.data) {
-              console.log('# Get global data', JSON.parse(val.data));
-            }
-          }});
+    // Get global mean of all users
+    this.lineDataApi
+    .getGlobalData()
+    .subscribe({
+      next: (val) => {
+        if (val && val.data) {
+          console.log('# Get global data', JSON.parse(val.data));
+        }
+      }});
+
+      this.userService.$isAuthenticated.subscribe((bool) => {
+        this.isAuthenticated = bool;
+      });
   }
 
   public isExtensionMessageDisplayed(bool: boolean) {
@@ -99,6 +105,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                 this.userService.getProfile().subscribe({
                   next: (val: any) => {
                     this.currentUser = new User(val.login);
+                    this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
                     this.displayFirstMessage();
                   },
                   error: (err) => console.log(err.message)
@@ -126,6 +133,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                 this.signUpForm.reset();
                 this.displayFirstMessage();
                 this.currentUser = new User(val.login);
+                this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
               },
               error: (error) => {
@@ -159,20 +167,6 @@ export class HomeComponent implements OnInit, AfterContentInit {
             });
     } else {
       this.toastService.handleToast(toastType.Error, 'Email Invalide');
-    }
-  }
-
-  public logout() {
-    this.authService.logout();
-    this.isAuthenticated = this.authService.isLoggedIn();
-    this.ngOnDestroy();
-  }
-
-  public showIndicatorsMobile() {
-    const indicators = document.getElementById('banner_indicators');
-    if (indicators) {
-      this.showIndicatorsBool = !this.showIndicatorsBool;
-      indicators.style.display = this.showIndicatorsBool ? 'flex' : 'none';
     }
   }
 

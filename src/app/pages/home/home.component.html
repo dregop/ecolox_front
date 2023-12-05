@@ -1,4 +1,5 @@
 <ng-container *ngIf="isAuthenticated; else unAuthenticated" >
+  
   <div id="message_overlay" class="absolute w-full h-full bg-slate-800 opacity-30 z-40" *ngIf="getStorageDisplayFirstMessage">
   </div>
   <div id="first_message" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto" *ngIf="getStorageDisplayFirstMessage">
@@ -13,46 +14,8 @@
   </div>
 
 
-  <div id="banner" class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center lg:h-12 h-10 w-full">
-    <app-banner></app-banner>      
-    <ng-container *ngIf="this.currentUser && isAuthenticated">
-      <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
-        <img src="../../../assets/logout.svg" width="30px" height="30px">
-      </a>
-      <div class="h-full font-bold text-slate-600 flex flex-row border-l-4 border-indigo-500 bg-stone-400 items-center" (click)="showIndicatorsMobile()">
-        <img src="../../../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
-        <span class=" pl-1 pr-2">{{ this.currentUser.getName() }}</span>
-      </div>
-      <div id="banner_indicators" class="flex flex-row-reverse items-center pr-1">
-        <div class="flex flex-row items-center">
-          <img src="../../assets/co2.svg" width="40px" height="40px" class="mr-1">
-          <span id="co2_max" class="text-red-500"></span>
-        </div>
-        <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
-      <div class="flex flex-row items-center mr-4">
-        <img src="../../assets/car.svg" width="35px" height="35px" class="mr-1">
-        <span id="kmByCar_max"></span>
-      </div>
-
-      <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
-
-    <div class="flex flex-row items-center mr-4">
-      <img src="../../assets/phone.svg" width="38px" height="38px">
-      <span id="chargedSmartphones_max"></span>
-    </div>
-    </div>
-    <div class="absolute left-0 mt-1">
-      <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">
-    </div>
-    <!-- <div class="absolute left-2">
-      <img src="../../assets/ecobuddy-nametag-alpha.png" alt="Eco Buddy" class="lg:w-64 w-40">
-    </div> -->
-    
-    
-    <!-- <button title="Signaler un bug">
-      <img src="../../assets/bug.svg" alt="Bug" class="relative right-36" width="20px" height="20px">
-    </button> -->
-    </ng-container>
+  <div id="banner">
+    <app-banner></app-banner>
   </div>
   <div id="container">
       <div id="menu">
@@ -62,8 +25,12 @@
         <chart (displayMessageExtension)="isExtensionMessageDisplayed($event)"></chart>
       </div>
   </div>
+
 </ng-container>
+
+
 <ng-template #unAuthenticated>
+
   <div class="flex lg:flex-row flex-col items-center pl-8 pr-8">
     <div class="basis-1/2 lg:mr-10 text-lg">
       <img src="../assets/ecobuddy_logo_2.png" alt="Logo Eco Buddy" class="lg:w-3/5 w-3/5 m-auto mb-1"/>
@@ -107,6 +74,7 @@
   <div class="fixed bottom-0 text-xs text-center w-full m-auto">
     <a routerLink="/mentions-legales" class="">Mentions Légales</a>
 </div>
+
 </ng-template>
 
 

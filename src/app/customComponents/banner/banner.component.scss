@@ -1,0 +1,15 @@
+@media (max-width: 768px) {
+    #banner_indicators {
+        display: none;
+        position: absolute;
+        top: 60px;
+        right: 10px;
+        background-color: #d6d3d1;
+        border-radius: 5px;
+        padding: 5px;
+        flex-direction: column;
+    }
+    .Capa_1 {
+        margin: 20px;
+    }
+}

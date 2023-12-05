@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { shareReplay } from 'rxjs';
+import { BehaviorSubject, shareReplay } from 'rxjs';
 import { API_URL } from 'src/environments/env.dev';
 import { User } from 'src/app/models/user';
 
@@ -9,7 +9,17 @@ import { User } from 'src/app/models/user';
 })
 export class UserService {
 
-  constructor(private http: HttpClient) { }
+  public $currentUser!: BehaviorSubject<User>;
+  private currentUser!: User;
+  public $isAuthenticated!: BehaviorSubject<any>;
+
+  constructor(private http: HttpClient) {
+    this.$currentUser = new BehaviorSubject(new User('waiting')); //TODO: default value to change ?
+    this.$currentUser.subscribe((user) => {
+      this.currentUser = user;
+    })
+    this.$isAuthenticated = new BehaviorSubject(null);
+  }
 
   getProfile() {
     return this.http.get<User>(API_URL + '/get_profile')
@@ -17,4 +27,6 @@ export class UserService {
         shareReplay() // prevent multiple http call
       );
   }
+
+
 }

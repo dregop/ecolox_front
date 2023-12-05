@@ -1,2 +1,38 @@
-
-
+<div class="bg-stone-300 flex flex-row-reverse border-1 border-stone-500 items-center lg:h-12 h-10 w-full" *ngIf="this.currentUser && isAuthenticated">
+    <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
+        <img src="../../../assets/logout.svg" width="30px" height="30px">
+    </a>
+    <div class="h-full font-bold text-slate-600 flex flex-row border-l-4 border-indigo-500 bg-stone-400 items-center" (click)="showIndicatorsMobile()">
+        <img src="../../../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
+        <span class=" pl-1 pr-2">{{ this.currentUser.getName() }}</span>
+    </div>
+    <div id="banner_indicators" class="flex flex-row-reverse items-center pr-1">
+        <div class="flex flex-row items-center">
+        <img src="../../assets/co2.svg" width="40px" height="40px" class="mr-1">
+        <span id="co2_max" class="text-red-500"></span>
+        </div>
+        <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
+    <div class="flex flex-row items-center mr-4">
+        <img src="../../assets/car.svg" width="35px" height="35px" class="mr-1">
+        <span id="kmByCar_max"></span>
+    </div>
+    
+    <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
+    
+    <div class="flex flex-row items-center mr-4">
+    <img src="../../assets/phone.svg" width="38px" height="38px">
+    <span id="chargedSmartphones_max"></span>
+    </div>
+    </div>
+    <div class="absolute left-0 mt-1">
+    <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">
+    </div>
+    <!-- <div class="absolute left-2">
+    <img src="../../assets/ecobuddy-nametag-alpha.png" alt="Eco Buddy" class="lg:w-64 w-40">
+    </div> -->
+    
+    
+    <!-- <button title="Signaler un bug">
+    <img src="../../assets/bug.svg" alt="Bug" class="relative right-36" width="20px" height="20px">
+    </button> -->    
+</div>
