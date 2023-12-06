@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable, NO_ERRORS_SCHEMA, OnInit } from '@angular/core';
 import * as d3 from 'd3';
 import { Line } from '../../models/line';
 import { Co2ByOriginByTime } from '../chart.component';
@@ -12,6 +12,8 @@ export class GraphService {
   public $zoom!: Subject<any>;
   public $onZoom!: BehaviorSubject<boolean>; // if you subscribe to it, you get notified when the value's subject is changed
   private onZoom!: boolean;
+  public $dataDrawnCo2TimeSerie!: BehaviorSubject<any>;
+  private dataDrawnCo2TimeSerie!: Co2ByOriginByTime[];
   public $xz!: BehaviorSubject<any>;
   public $yz!: BehaviorSubject<any>;
   private xz!: any;
@@ -26,6 +28,7 @@ export class GraphService {
     this.$onZoom = new BehaviorSubject(false);
     this.$xz = new BehaviorSubject(null);
     this.$yz = new BehaviorSubject(null);
+    this.$dataDrawnCo2TimeSerie = new BehaviorSubject(null);
     this.$onZoom.subscribe((bool) => {
       this.onZoom = bool; // onZoom subscibed to $onZoom and will update automaticly when $onZoom 's subject value changes
     });
@@ -34,6 +37,9 @@ export class GraphService {
     });
     this.$yz.subscribe((yz) => {
       this.yz = yz;
+    });
+    this.$dataDrawnCo2TimeSerie.subscribe((dataDrawnCo2TimeSerie) => {
+      this.dataDrawnCo2TimeSerie = dataDrawnCo2TimeSerie;
     });
   }
 
@@ -99,7 +105,7 @@ export class GraphService {
           return null;
         }
       }));
-      y.domain([data[0].co2 - marginYDomain, d3.max(data, function (d) { return d.co2 + marginYDomain; })]); // define the range of y axis
+      y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + marginYDomain; })]); // define the range of y axis
       // i want y axis to start at the first value recorded not zéro so that it is nicer to see
   }
 
@@ -152,7 +158,7 @@ export class GraphService {
     return index;
   }
 
-  public buildTooltip(chartProps: any, dataDrawnCo2TimeSerie: Co2ByOriginByTime[]) {
+  public buildTooltip(chartProps: any) {
     // Add a circle under our tooltip, right over the “hovered” point
     this.tooltip = d3.select("#tooltip");
     this.tooltipCircle = chartProps.svgBox
@@ -219,17 +225,17 @@ export class GraphService {
       const getDistanceFromHoveredDate = (d: Co2ByOriginByTime) => Math.abs((xAccessor(d) as unknown as number) - hoveredDate);
       const getDistanceFromHoveredCo2 = (d: Co2ByOriginByTime) => Math.abs((yAccessor(d) as unknown as number) - hoveredCo2);
       const closestIndex = d3.leastIndex(
-        dataDrawnCo2TimeSerie,
+        _this.dataDrawnCo2TimeSerie,
         (a: any, b: any) => getDistanceFromHoveredDate(a) - getDistanceFromHoveredDate(b)
       );
       let closestDataPoint;
     
 
       if (closestIndex) {
-        closestDataPoint = dataDrawnCo2TimeSerie[closestIndex !== -1 ? closestIndex : 0];
+        closestDataPoint = _this.dataDrawnCo2TimeSerie[closestIndex !== -1 ? closestIndex : 0];
 
-        const Ymax = d3.max(dataDrawnCo2TimeSerie, (d) => { return d.co2 + _this.marginYDomain; });
-        const Xmax = Math.abs(xAccessor(dataDrawnCo2TimeSerie[dataDrawnCo2TimeSerie.length - 1]) - xAccessor(dataDrawnCo2TimeSerie[0]));
+        const Ymax = d3.max(_this.dataDrawnCo2TimeSerie, (d) => { return d.co2 + _this.marginYDomain; });
+        const Xmax = Math.abs(xAccessor(_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1]) - xAccessor(_this.dataDrawnCo2TimeSerie[0]));
         // console.log(Xmax);
         // console.log(Ymax);
         const maxDistDateFromMouseDisplay = Xmax ? Xmax * 2/10 : 0;
@@ -237,7 +243,7 @@ export class GraphService {
         // console.log('coef date : ', maxDistDateFromMouseDisplay);
         // console.log('coef co2 : ', maxDistCo2FromMouseDisplay);
         
-        if (getDistanceFromHoveredCo2(dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouseDisplay ||getDistanceFromHoveredDate(dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouseDisplay) {
+        if (getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistCo2FromMouseDisplay ||getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]) > maxDistDateFromMouseDisplay) {
           // console.log('date distance too far : ', getDistanceFromHoveredDate(_this.dataDrawnCo2TimeSerie[closestIndex]));
           // console.log('co2 distance too far : ', getDistanceFromHoveredCo2(_this.dataDrawnCo2TimeSerie[closestIndex]));
           onMouseLeave();
@@ -245,7 +251,7 @@ export class GraphService {
         }
       }
       else {
-        closestDataPoint = dataDrawnCo2TimeSerie[0];
+        closestDataPoint = _this.dataDrawnCo2TimeSerie[0];
       }
   
       const closestXValue = xAccessor(closestDataPoint);
@@ -253,13 +259,13 @@ export class GraphService {
       const closestorigin = originAccessor(closestDataPoint);
 
       // We only print the co2 emitted since the beginning of the currently showing range of x
-      const gCo2 = closestYValue - dataDrawnCo2TimeSerie[0].co2;
+      const gCo2 = closestYValue - _this.dataDrawnCo2TimeSerie[0].co2;
 
       const kmByCar = Math.trunc(Math.round(1000 * gCo2 / _this.GESgCO2ForOneKmByCar) / 1000);
       const chargedSmartphones = Math.round(gCo2 / _this.GESgCO2ForOneChargedSmartphone);
   
       const formatDate = _this.d3Locale.format("%-d %b %Y à %H:%M");
-      _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(dataDrawnCo2TimeSerie[0]) as unknown as Date));
+      _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(_this.dataDrawnCo2TimeSerie[0]) as unknown as Date));
       _this.tooltip.select("#date").text('Au ' + formatDate(closestXValue as unknown as Date));
       _this.tooltip.select("#origin").html('sur : ' + closestorigin);
       _this.tooltip.select("#co2").html(gCo2 + ' gCO<sub>2</sub>e');
@@ -329,6 +335,10 @@ export class GraphService {
       xAxisLine.style("opacity", 0);
       yAxisLine.style("opacity", 0);
     }
+  }
+
+  public updateTooltip() {
+
   }
 
   public chartZoom(event: any, chartProps: any, gx: any, gy: any, xAxis: any, yAxis: any, valueslines: Line[]) {

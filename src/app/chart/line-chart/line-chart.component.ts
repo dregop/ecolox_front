@@ -128,9 +128,11 @@ export class LineChartComponent implements OnInit {
         this.dataDrawnCo2TimeSerie.forEach((data) => {
           sumAllData.push(data);
         });
-        this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.graphService.marginYDomain);
-        this.zoomTransform();
-        this.chartProps.svgBox.on('.zoom', null);
+        if (!lastDayButton?.className.includes('activated')) {
+          this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.graphService.marginYDomain);
+          this.zoomTransform();
+          this.chartProps.svgBox.on('.zoom', null);
+        }
         globalDataButton.className = 'btn-graph activated';
         d3.select('.line.line0').style("opacity", 1);
         d3.select('.circle_line0').style("opacity", 1);
@@ -150,11 +152,12 @@ export class LineChartComponent implements OnInit {
       if (this.dataDbCo2TimeSerieFiltered.length === 0) {
         this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
       }
-      this.updateChart();
       lastDayButton.className = 'btn-graph activated';
+    
       if (allButton) {
         allButton.className = 'btn-graph';
       }
+      this.updateChart();
       if (zoomActif) {
         this.onZoom = true;
       }
@@ -169,12 +172,12 @@ export class LineChartComponent implements OnInit {
         this.onZoom = false;
       }
       this.dataDbCo2TimeSerieFiltered = [];
-      this.updateChart();
+      allButton.className = 'btn-graph activated';     
       // this.fillIndicators(); //TODO: check impact
-      allButton.className = 'btn-graph activated';
       if (lastDayButton) {
         lastDayButton.className = 'btn-graph';
       }
+      this.updateChart();
       if (zoomActif) {
         this.onZoom = true;
       }
@@ -187,6 +190,8 @@ export class LineChartComponent implements OnInit {
     
     this.dataDrawnCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataSumDbExt);
     console.log(this.dataDrawnCo2TimeSerie);
+    // propage 
+    this.graphService.$dataDrawnCo2TimeSerie.next(this.dataDrawnCo2TimeSerie);
 
     // Set the dimensions of the graph
     const margin = { top: 30, right: 20, bottom: 40, left: 50 };
@@ -290,7 +295,7 @@ export class LineChartComponent implements OnInit {
     .scaleExtent([1, 20]);
 
     // TOOLTIP
-    this.graphService.buildTooltip(this.chartProps, this.dataDrawnCo2TimeSerie)
+    this.graphService.buildTooltip(this.chartProps);
 
     // Add avatars for each Lines
     this.valueslines.forEach(line => {
@@ -311,6 +316,7 @@ export class LineChartComponent implements OnInit {
     }
     console.log('update chart');
 
+    // which data to draw 
     if (this.dataDbCo2TimeSerieFiltered && this.dataDbCo2TimeSerieFiltered.length > 0) {
       this.dataDrawnCo2TimeSerie = [...this.dataDbCo2TimeSerieFiltered];
     }
@@ -320,11 +326,10 @@ export class LineChartComponent implements OnInit {
       this.dataDrawnCo2TimeSerie = [];
     }
 
-    this.firstDataExt.forEach((entry) => {  // fill with data extension when you were not on the website
+    this.firstDataExt.forEach((entry) => {  // fill with data extension stored when you were not on the website
       this.dataDrawnCo2TimeSerie.push(entry);
     });
 
-    // reduce nbre of points by 20 and put it in dataDrawnCo2TimeSerie
     this.dataDrawnCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataDrawnCo2TimeSerie);
 
     this.dataExt.forEach((entry) => {
@@ -332,6 +337,10 @@ export class LineChartComponent implements OnInit {
     });
 
 
+    // propage 
+    this.graphService.$dataDrawnCo2TimeSerie.next(this.dataDrawnCo2TimeSerie);
+
+    // update lines data
     if (this.valueslines.length > 1) {
       this.valueslines[1].data = this.dataDrawnCo2TimeSerie;
     } else {
@@ -346,6 +355,7 @@ export class LineChartComponent implements OnInit {
       this.dataDrawnCo2TimeSerie.forEach((data) => {
         sumAllData.push(data);
       });
+      console.log(sumAllData.length);
       this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.graphService.marginYDomain);
     } else {
       this.graphService.scaleXYDomain(this.dataDrawnCo2TimeSerie, this.chartProps.x, this.chartProps.y, this.graphService.marginYDomain);
