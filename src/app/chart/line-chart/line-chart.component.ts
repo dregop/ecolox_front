@@ -75,8 +75,8 @@ export class LineChartComponent implements OnInit {
 
 
           _this.chartProps.svgBox.select('.arrow')
-          .attr("x", newWidth - 80 )
-          .attr("y", newHeight -67);
+          .attr("x", newWidth - 50 - _this.chartProps.margin.top )
+          .attr("y", newHeight -37 - _this.chartProps.margin.bottom);
 
           // update mouseemove 
           _this.chartProps.listeningRect
@@ -248,14 +248,17 @@ export class LineChartComponent implements OnInit {
       .attr('transform', `translate(0,${height})`)
       .call(xAxis, this.chartProps.x);
 
+    this.chartProps.height = height;
+    this.chartProps.width = width;
+
       svgBox.append('image')
       .attr("class", "arrow")
       .attr('xlink:href', "assets/arrow.png")
       .attr('width', 14)
       .attr('height', 14)
-      .attr('x', width - 5)
+      .attr('x', this.chartProps.width - 5)
       .attr('opacity', '1')
-      .attr('y', height - 7);
+      .attr('y', this.chartProps.height - 7);
 
     // Add the Y Axis
     const gy = svgBox.append('g')
@@ -270,8 +273,6 @@ export class LineChartComponent implements OnInit {
     this.chartProps.svgBox = svgBox;
     this.chartProps.xAxis = xAxis;
     this.chartProps.yAxis = yAxis;
-    this.chartProps.height = height;
-    this.chartProps.width = width;
     this.chartProps.margin = margin;
 
     svg.append("text")
