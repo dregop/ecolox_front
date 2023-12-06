@@ -105,7 +105,7 @@ export class LineChartComponent implements OnInit {
         } else {
           document.body.style.cursor =  "all-scroll";
           zoomButton.title = 'Désactiver le zoom';
-          zoomButton.className = 'activated';
+          zoomButton.className = 'btn-graph activated';
           this.chartProps.svgBox.call(this.zoom as any, d3.zoomIdentity);
         }
         this.onZoom = !this.onZoom; // to disable update when we want to zoom/pan
@@ -131,7 +131,7 @@ export class LineChartComponent implements OnInit {
         this.graphService.scaleXYDomain(sumAllData, this.chartProps.x, this.chartProps.y, this.graphService.marginYDomain);
         this.zoomTransform();
         this.chartProps.svgBox.on('.zoom', null);
-        globalDataButton.className = 'activated';
+        globalDataButton.className = 'btn-graph activated';
         d3.select('.line.line0').style("opacity", 1);
         d3.select('.circle_line0').style("opacity", 1);
         d3.select('.image_line0').style("opacity", 1);
@@ -151,7 +151,7 @@ export class LineChartComponent implements OnInit {
         this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour aujourd\'hui');
       }
       this.updateChart();
-      lastDayButton.className = 'activated';
+      lastDayButton.className = 'btn-graph activated';
       if (allButton) {
         allButton.className = 'btn-graph';
       }
@@ -171,7 +171,7 @@ export class LineChartComponent implements OnInit {
       this.dataDbCo2TimeSerieFiltered = [];
       this.updateChart();
       // this.fillIndicators(); //TODO: check impact
-      allButton.className = 'activated';
+      allButton.className = 'btn-graph activated';
       if (lastDayButton) {
         lastDayButton.className = 'btn-graph';
       }
@@ -188,8 +188,8 @@ export class LineChartComponent implements OnInit {
     this.dataDrawnCo2TimeSerie = this.graphService.reducePointsCo2TimeSerie(this.dataSumDbExt);
     console.log(this.dataDrawnCo2TimeSerie);
 
-    // Set the dimensions of the canvas / graph
-    const margin = { top: 30, right: 20, bottom: 30, left: 50 };
+    // Set the dimensions of the graph
+    const margin = { top: 30, right: 20, bottom: 40, left: 50 };
     let width = 1244  - margin.left - margin.right;
     let height = 651  - margin.top - margin.bottom;
 
@@ -216,7 +216,7 @@ export class LineChartComponent implements OnInit {
 
     // Define the axes
     const xAxis = (g: any, x: any) => g
-    .call(d3.axisBottom(x).tickSizeOuter(0).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(width / 80));
+    .call(d3.axisBottom(x).tickFormat(this.graphService.multiFormat).tickSize(0).tickPadding(width / 80));
     var yAxis = (g: any, y: any) => g
     .call(d3.axisLeft(y).tickPadding(height / 80).tickSizeOuter(0).tickSize(-150000));
   

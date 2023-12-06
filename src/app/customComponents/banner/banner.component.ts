@@ -24,7 +24,6 @@ export class BannerComponent implements OnInit{
   }
 
   ngOnInit(): void {
-    this.isAuthenticated = this.authService.isLoggedIn();
     this.userService.$isAuthenticated.next(this.isAuthenticated);
   }
 
@@ -37,7 +36,8 @@ export class BannerComponent implements OnInit{
 
   public showIndicatorsMobile() {
     const indicators = document.getElementById('banner_indicators');
-    if (indicators) {
+    if (indicators && indicators.clientWidth < 150) { // 150 it's when it start to be smartphones
+      console.log(indicators.clientWidth);
       this.showIndicatorsBool = !this.showIndicatorsBool;
       indicators.style.display = this.showIndicatorsBool ? 'flex' : 'none';
     }

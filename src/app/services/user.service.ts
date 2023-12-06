@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, shareReplay } from 'rxjs';
 import { API_URL } from 'src/environments/env.dev';
 import { User } from 'src/app/models/user';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,12 +14,12 @@ export class UserService {
   private currentUser!: User;
   public $isAuthenticated!: BehaviorSubject<any>;
 
-  constructor(private http: HttpClient) {
-    this.$currentUser = new BehaviorSubject(new User('waiting')); //TODO: default value to change ?
+  constructor(private http: HttpClient, private authService: AuthService) {
+    this.$currentUser = new BehaviorSubject(new User('')); //TODO: default value to change ?
     this.$currentUser.subscribe((user) => {
       this.currentUser = user;
     })
-    this.$isAuthenticated = new BehaviorSubject(null);
+    this.$isAuthenticated = new BehaviorSubject(this.authService.isLoggedIn());
   }
 
   getProfile() {

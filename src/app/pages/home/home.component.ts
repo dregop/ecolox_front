@@ -44,19 +44,22 @@ export class HomeComponent implements OnInit, AfterContentInit {
   }
   ngAfterContentInit(): void {
     this.displayFirstMessage();
+    this.userService.$isAuthenticated.subscribe((bool) => {
+      this.isAuthenticated = bool;
+      console.log(this.isAuthenticated);
+      if (this.isAuthenticated) {
+        this.userService.getProfile().subscribe({
+          next: (val: any) => {
+            this.currentUser = new User(val.login);
+            this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
+          },
+          error: (err) => console.log(err.message)
+        });
+      }
+    });
   }
   
   ngOnInit() {
-    this.isAuthenticated = this.authService.isLoggedIn();
-    if (this.isAuthenticated) {
-      this.userService.getProfile().subscribe({
-        next: (val: any) => {
-          this.currentUser = new User(val.login);
-          this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
-        },
-        error: (err) => console.log(err.message)
-      });
-    }
 
     // this.authService.test().subscribe({
     //   next: (data) => console.log(data),
@@ -71,10 +74,6 @@ export class HomeComponent implements OnInit, AfterContentInit {
           console.log('# Get global data', JSON.parse(val.data));
         }
       }});
-
-      this.userService.$isAuthenticated.subscribe((bool) => {
-        this.isAuthenticated = bool;
-      });
   }
 
   public isExtensionMessageDisplayed(bool: boolean) {
@@ -111,6 +110,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                   error: (err) => console.log(err.message)
                 });
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
+                this.userService.$isAuthenticated.next(this.isAuthenticated);
               },
               error: (error) => {
                 if (error.error) {
@@ -135,6 +135,7 @@ export class HomeComponent implements OnInit, AfterContentInit {
                 this.currentUser = new User(val.login);
                 this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
                 this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
+                this.userService.$isAuthenticated.next(this.isAuthenticated);
               },
               error: (error) => {
                 if (error.error) {
