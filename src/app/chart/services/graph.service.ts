@@ -72,6 +72,7 @@ export class GraphService {
     formatMinute = this.d3Locale.format("%H:%M"),
     formatHour = this.d3Locale.format("%H %p"),
     formatDay = this.d3Locale.format("%a %d"),
+    formatWeek = this.d3Locale.format("%b %d"),
     formatMonth = this.d3Locale.format("%d %b"),
     formatYear = this.d3Locale.format("%Y");
     if (typeof date === 'string') {
@@ -81,7 +82,7 @@ export class GraphService {
         : d3.timeMinute(date) < date ? formatSecond
         : d3.timeHour(date) < date ? formatMinute
         : d3.timeDay(date) < date ? formatHour
-        : d3.timeMonth(date) < date ? formatDay
+        : d3.timeMonth(date) < date ? (d3.timeWeek(date) < date ? formatDay : formatWeek)
         : d3.timeYear(date) < date ? formatMonth
         : formatYear)(date);
   }

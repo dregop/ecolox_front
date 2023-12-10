@@ -18,7 +18,7 @@ export class LineChartComponent implements OnInit {
 
   public dataDbCo2TimeSerieFiltered: Co2ByOriginByTime[] = [];
   public dataDrawnCo2TimeSerie: Co2ByOriginByTime[] = [];
-  public chartProps: any;
+  public chartProps!: any;
   private glines: any;
   private valueslines: Line[] = [];
   private zoom!: any;
