@@ -112,7 +112,7 @@ export class GraphService {
 
   public reducePointsCo2TimeSerie(data: Co2ByOriginByTime[]): Co2ByOriginByTime[] { // very approximative, need to refactor this function
     let i = 0;
-    let reducedData: Co2ByOriginByTime[] = [];
+    let reducedData: Co2ByOriginByTime[] = [data[0]];
     const dataGroupedCo2TimeSerie = d3.group(data, (d) => {return d.co2;});
     if (dataGroupedCo2TimeSerie.size < 100 || data.length < 5000) {
       return data;
