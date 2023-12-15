@@ -20,6 +20,7 @@ export class Line {
         this.lineValues = this.define(this.data, this.xChartProps, this.yChartProps); 
     }
 
+    // given the data and x, y it defines a line with a certain type of curve
     public define(data: Co2ByOriginByTime[], x: any, y: any): any {
         return d3.line<Co2ByOriginByTime>().curve(d3.curveMonotoneX)
             .x(function (d) {
