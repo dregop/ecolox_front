@@ -21,7 +21,7 @@ export class Line {
     }
 
     public define(data: Co2ByOriginByTime[], x: any, y: any): any {
-        return d3.line<Co2ByOriginByTime>().curve(d3.curveCatmullRom.alpha(0.5))
+        return d3.line<Co2ByOriginByTime>().curve(d3.curveMonotoneX)
             .x(function (d) {
                 if (d.date instanceof Date) {
                 return x(d.date.getTime());
