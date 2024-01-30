@@ -2,35 +2,111 @@
     <a href="#" title="Déconnexion" (click)="logout()" class="bg-stone-400 flex items-center border-l-2 border-stone-300 p-1 h-full">
         <img src="../../../assets/logout.svg" width="30px" height="30px">
     </a>
-    <div class="h-full font-bold text-slate-600 flex flex-row border-l-4 border-indigo-500 bg-stone-400 items-center" (click)="showIndicatorsMobile()">
+    <button class="h-full font-bold text-slate-600 flex flex-row border-l-4 border-indigo-500 bg-stone-400 items-center" (click)="showAccountMenu($event)">
         <img src="../../../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
         <span class=" pl-1 pr-2">{{ this.currentUser.getName() }}</span>
+    </button>
+    <div id="level" class="items-center flex flex-row-reverse mr-1 ">
+        <ng-container *ngIf="(userFeatures && userFeatures.level === 'apprenti'); else debutant">
+            <button class="items-center flex flex-row-reverse" (click)="displayOverLayMessage()">
+                <span class="text-lg mr-2">Apprenti</span>
+                <img src="../../assets/medal-apprenti.svg" width="40px" height="40px">
+            </button>
+        </ng-container>
+        <ng-template #debutant>
+            <button class="items-center flex flex-row-reverse" (click)="displayOverLayMessage()">
+                <span class="text-lg mr-2">Débutant</span>
+                <img src="../../assets/medal-debutant.svg" width="40px" height="40px">
+            </button>
+        </ng-template>
     </div>
-    <div id="banner_indicators" class="flex flex-row-reverse items-center pr-1 mr-1">
-        <div class="flex flex-row items-center">
-        <img src="../../assets/co2.svg" width="40px" height="40px" class="mr-1">
-        <span id="co2_max" class="text-red-500"></span>
+    <div id="banner_indicators" class="flex flex-row-reverse items-center mr-2 h-full">
+        <!-- <div class="flex flex-row items-center ml-2 border-l-4 border-r-4 border-slate-200 h-full p-1">
+            <img src="../../../assets/eolic.svg" width="35px" height="35px" class="mr-1">
+            <span id="nuclear_energy" class="text-lime-600">0 Mw/h</span>
         </div>
-        <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
-    <div class="flex flex-row items-center mr-4">
-        <img src="../../assets/car.svg" width="35px" height="35px" class="mr-1">
-        <span id="kmByCar_max"></span>
+        <div class="flex flex-row items-center ml-2 border-l-4 border-slate-200 h-full p-1">
+            <img src="../../../assets/barrels-oil.svg" width="35px" height="35px" class="mr-1">
+            <span id="nuclear_energy" class="text-red-500">0 Mw/h</span>
+        </div>
+        <div class="flex flex-row items-center ml-2 border-l-4 border-slate-200 h-full p-1">
+            <img src="../../../assets/coal.svg" width="35px" height="35px" class="mr-1">
+            <span id="nuclear_energy" class="text-red-600">0 Mw/h</span>
+        </div>
+        <div class="flex flex-row items-center ml-2 border-l-4 border-slate-200 h-full p-1">
+            <img src="../../../assets/nuclear-plant.svg" width="40px" height="40px" class="mr-1">
+            <span id="nuclear_energy" class="text-lime-600">0 Mw/h</span>
+        </div> -->
+        <div class="flex flex-row items-center border-r-4 border-slate-200 h-full p-1">
+            <img src="../../assets/co2.svg" width="40px" height="40px" class="mr-1">
+            <span id="co2_max" class="text-red-600">0 gCO<sub>2</sub>e</span>
+        </div>
+            <!-- <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
+            <div class="flex flex-row items-center mr-4">
+                <img src="../../assets/car.svg" width="35px" height="35px" class="mr-1">
+                <span id="kmByCar_max">0 Km</span>
+            </div>
+        
+            <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
+        
+            <div class="flex flex-row items-center mr-4">
+                <img src="../../assets/phone.svg" width="38px" height="38px">
+                <span id="chargedSmartphones_max">0 recharges</span>
+            </div> -->
     </div>
-    
-    <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
-    
-    <div class="flex flex-row items-center mr-4">
-    <img src="../../assets/phone.svg" width="38px" height="38px">
-    <span id="chargedSmartphones_max"></span>
+
+    <div class="absolute lg:w-1/4 w-1/2 left-0 right-0 m-auto lg:top-14 top-12 items-center bg-white border-2 text-center">
+            <img src="../../assets/internet.svg" alt="Internet" height="30px" width="30px" class="inline mr-2">
+            <span class="inline mr-4">INTERNET</span>
+            <span id="time_range"></span>
     </div>
-    </div>
+
     <div class="absolute left-0 mt-1">
-    <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">
+        <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">
     </div>
-    <!-- <div class="absolute left-2">
-    <img src="../../assets/ecobuddy-nametag-alpha.png" alt="Eco Buddy" class="lg:w-64 w-40">
-    </div> -->
     
+    <div id="account_menu" class="absolute right-2 top-14 rounded-lg bg-stone-300 w-22 flex flex-col z-50 border-b-2 border-t-2 border-stone-400" style="display: none;">
+        <button class="btn-menu deplacement" title="Défis">
+            <div class="flex flex-row items-center">
+                <div class="basis-1/3 ml-2 mr-2">
+                    <img src="../../assets/crossed-swords.svg" alt="Avion" height="35px" width="35px" class="inline mr-1">
+                </div>
+                <div class="basis-2/3 text-left">
+                    <span>Défis</span>
+                </div>
+            </div>
+        </button>
+        <button class="btn-menu deplacement border-t-2" title="Ajouter un ami">
+            <div class="flex flex-row items-center">
+                <div class="basis-1/3 ml-2 mr-2">
+                    <img src="../../assets/friends.svg" alt="Avion" height="35px" width="35px" class="inline mr-1">
+                </div>
+                <div class="basis-2/3 text-left">
+                    <span>Ami.es</span>
+                </div>
+            </div>
+        </button>
+        <button class="btn-menu deplacement border-t-2" title="Paramètres">
+            <div class="flex flex-row items-center">
+                <div class="basis-1/3 ml-2 mr-2">
+                    <img src="../../assets/settings.svg" alt="Avion" height="40px" width="40px" class="inline mr-1">
+                </div>
+                <div class="basis-2/3 text-left">
+                    <span>Paramètres</span>
+                </div>
+            </div>
+        </button>
+        <button class="btn-menu deplacement border-t-2" title="Mentions légales">
+            <div class="flex flex-row items-center">
+                <div class="basis-1/4 ml-2 mr-2">
+                    <img src="../../assets/law.svg" alt="Avion" height="40px" width="40px" class="inline mr-1">
+                </div>
+                <div class="basis-3/4 text-left">
+                    <span>Mentions légales</span>
+                </div>
+            </div>
+        </button>
+    </div>
     
     <!-- <button title="Signaler un bug">
     <img src="../../assets/bug.svg" alt="Bug" class="relative right-36" width="20px" height="20px">

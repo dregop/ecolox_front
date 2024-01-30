@@ -1,0 +1,85 @@
+<div id="overlay" class="absolute top-0 left-0 w-full h-full bg-slate-800 opacity-30 z-40">
+</div>
+<div id="message" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto">
+  <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
+    <span class="text-sm font-semibold">Quel niveau as-tu sur l'écologie ?</span><br>
+
+    <div class="flex lg:flex-row flex-col p-2">
+        <div class="levelDiv" id="debutant" (click)="selectLevel('debutant')">
+            Débutant<br>
+            <img src="../../../assets/medal-debutant.svg" alt="Médail Débutant" width="80px" class="p-2 inline"><br>
+            <span class="text-xs">Peu de connaissance, objectifs faciles</span>
+        </div>
+        <div class="levelDiv" id="apprenti" (click)="selectLevel('apprenti')">
+            Apprenti<br>
+            <img src="../../../assets/medal-apprenti.svg" alt="Médail Apprenti" width="80px" class="p-2 inline"><br>
+            <span class="text-xs">Bonne base de connaissance, objectifs moyens</span>
+        </div>
+        <div class="levelDiv">
+            <div class="absolute lg:w-1/6 w-1/2 opacity-60">
+                Expert<br>
+                <img src="../../../assets/medal-expert.svg" alt="Médail Expert" width="80px" class="p-2 inline">
+            </div>
+            <div class="w-full h-full relative">
+               <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4"> 
+            </div>
+        </div>
+        <div class="levelDiv">
+            <div class="absolute lg:w-1/6 w-1/2 opacity-60">
+                Maître<br>
+                <img src="../../../assets/medal-maitre.svg" alt="Médail Maître" width="80px" class="p-2 inline">
+            </div>
+            <div class="w-full h-full relative">
+                <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4"> 
+             </div>
+        </div>
+    </div>
+
+    <div *ngIf="isSelected()">
+        <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" width="50px" class="inline" title="Suivant" id="nextImg">
+    </div>
+    <!-- <div>
+        <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
+        <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
+    </div> -->
+
+
+    <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
+    <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+  </div>
+</div>
+
+<div id="message2" style="display:none" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto">
+  <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
+    <p class="text-sm font-semibold">Tu as choisi le niveau <span class="text-lime-600 text-lg">{{ level }}</span></p><br>
+
+    <p>
+        Ton crédit carbonne est de <span style="color: red">{{ tonnes }} Tonnes de CO2</span> par an<br>
+        Ce qui équivaut à vivre une sur une planete à +<span style="color: red">{{ degres }} degrés</span> par rapport à la température des années 1900<br>
+    </p>
+
+    <p>
+        Ta limite journalière est donc fixée à <span style="color: red">{{ dayTreashold }} kg de CO2</span> par jour pour le TOTAL de toutes les catégories.
+    </p>
+
+    <p class="mt-4">
+        Comment souhaite tu répartir ton crédit en fonction de ces différentes catégories ? <br> 
+        <span class="text-xs">(Si tu ne sais pas, tu peux laisser les valeurs par défaut. Tu pourras les modifier plus tard).</span>
+    </p>
+
+    <p>
+        DEPLACEMENT : <input type="number" min="1" [max]="deplacementMax" step="1" [(ngModel)]="deplacement" (ngModelChange)="changeValue('deplacement')"> %<br>
+        MAISON : <input type="number" min="1" [max]="maisonMax" step="1" [(ngModel)]="maison" (ngModelChange)="changeValue('maison')"> %<br>
+        ACHATS : <input type="number" min="1" [max]="achatsMax" step="1" [(ngModel)]="achats" (ngModelChange)="changeValue('achats')"> %<br>
+        INTERNET : <input type="number" min="1" [max]="10" step="1" [(ngModel)]="internet" (ngModelChange)="changeValue('internet')"> % Max : 10%<br>
+    </p>
+
+    <img src="../../../assets/previous.svg" alt="Précédent" width="50px" class="inline" title="Précédent" id="previousImg" (click)="previous()">
+    |
+
+    <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 text-lg hover:bg-amber-400 active:bg-amber-500 shadow-2xl" (click)="validate()">VALIDER</button>
+
+    <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
+    <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+  </div>
+</div>

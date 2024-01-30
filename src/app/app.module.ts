@@ -14,6 +14,11 @@ import { HomeComponent } from './pages/home/home.component';
 import { ToggleButtonComponent } from './customComponents/toggle-button/toggle-button.component';
 import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { LineChartComponent } from './chart/line-chart/line-chart.component';
+import { OverlayMessageComponent } from './customComponents/overlay-message/overlay-message.component';
+import { InternetComponent } from './pages/internet/internet.component';
+import { HouseComponent } from './pages/house/house.component';
+import { RankComponent } from './pages/rank/rank.component';
+import { BarChartComponent } from './chart/bar-chart/bar-chart.component';
 
 
 @NgModule({
@@ -26,7 +31,12 @@ import { LineChartComponent } from './chart/line-chart/line-chart.component';
     HomeComponent,
     ToggleButtonComponent,
     ResetPasswordComponent,
-    LineChartComponent
+    LineChartComponent,
+    OverlayMessageComponent,
+    InternetComponent,
+    HouseComponent,
+    RankComponent,
+    BarChartComponent
   ],
   imports: [
     BrowserModule,

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterContentChecked, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { User } from 'src/app/models/user';
+import { UserFeatures } from 'src/app/models/userFeatures';
 import { AuthService } from 'src/app/services/auth.service';
 import { UserService } from 'src/app/services/user.service';
 
@@ -13,6 +14,7 @@ export class BannerComponent implements OnInit{
   public isAuthenticated!: any;
   public currentUser!: User;
   private showIndicatorsBool: boolean = false;
+  public userFeatures!: UserFeatures;
 
   constructor(private authService: AuthService, private userService: UserService, private router: Router) {
     this.userService.$currentUser.subscribe((user) => {
@@ -21,9 +23,13 @@ export class BannerComponent implements OnInit{
     this.userService.$isAuthenticated.subscribe((bool) => {
       this.isAuthenticated = bool;
     });
+    this.userService.$userFeatures.subscribe((user) => {
+      this.userFeatures = user;
+    });
   }
 
   ngOnInit(): void {
+
     this.userService.$isAuthenticated.next(this.isAuthenticated);
   }
 
@@ -34,13 +40,27 @@ export class BannerComponent implements OnInit{
     this.ngOnDestroy();
   }
 
-  public showIndicatorsMobile() {
-    const indicators = document.getElementById('banner_indicators');
-    if (indicators && indicators.clientWidth < 150) { // 150 it's when it start to be smartphones
-      console.log(indicators.clientWidth);
-      this.showIndicatorsBool = !this.showIndicatorsBool;
-      indicators.style.display = this.showIndicatorsBool ? 'flex' : 'none';
+  public showAccountMenu(event: Event) {
+    event.stopPropagation();
+    const account_menu = document.getElementById('account_menu');
+    if (account_menu) { // 150 it's when it start to be smartphones && indicators.clientWidth < 150
+      account_menu.style.display = 'flex';
     }
+    // close the menu
+    document.addEventListener('click', () => {
+      const account_menu = document.getElementById('account_menu');
+      if (account_menu) {
+        account_menu.style.display = 'none';
+      }
+    });
+  }
+
+  public displayOverLayMessage() {
+    const overlay = document.getElementById('overlay_message');
+    if (overlay) {
+      overlay.style.display = 'block';
+    }
+
   }
 
   ngOnDestroy() {

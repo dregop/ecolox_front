@@ -10,19 +10,20 @@ export class Line {
     private yChartProps: any;
     private lineValues: any;
 
-    constructor(name: string, data: Co2ByOriginByTime[], xChartProps: any, yChartProps: any, color: string, category?: string) {
+    constructor(name: string, data: Co2ByOriginByTime[], xChartProps: any, yChartProps: any, color: string, curveType?: d3.CurveFactory | d3.CurveBundleFactory, category?: string) {
         this.name = name;
         this.data = data;
         this.color = color;
         this.category = category;
         this.xChartProps = xChartProps;
         this.yChartProps = yChartProps;
-        this.lineValues = this.define(this.data, this.xChartProps, this.yChartProps); 
+        this.lineValues = this.define(this.data, this.xChartProps, this.yChartProps, curveType); 
     }
 
     // given the data and x, y it defines a line with a certain type of curve
-    public define(data: Co2ByOriginByTime[], x: any, y: any): any {
-        return d3.line<Co2ByOriginByTime>().curve(d3.curveMonotoneX)
+    public define(data: Co2ByOriginByTime[], x: any, y: any, curveType?: d3.CurveFactory | d3.CurveBundleFactory): any {
+        let curve = curveType === undefined ? d3.curveMonotoneX : curveType;
+        return d3.line<Co2ByOriginByTime>().curve(curve)
             .x(function (d) {
                 if (d.date instanceof Date) {
                 return x(d.date.getTime());
@@ -40,12 +41,89 @@ export class Line {
         .attr('d', this.lineValues);
     }
 
-    public update(svg: any, x: any, y: any): void {
+    public update(svg: any, x: any, y: any, curveType?: d3.CurveFactory | d3.CurveBundleFactory): void {
         svg.select('.line.' + this.name)
-        .attr('d', this.define(this.data, x, y));
+        .attr('d', this.define(this.data, x, y, curveType));
     }
 
     public selectPath(svg: any): any {
         return svg.select('path.line.line');
+    }
+
+    public getLineLastPointPos(chartProps: any, xz?: any, yz?: any) {
+        const yAccessor = (d: Co2ByOriginByTime) => d.co2;
+        const xAccessor = (d: Co2ByOriginByTime) => d.date;
+    
+        let xLastPos;
+        let yLastPos;
+        if (xz && yz) {
+          xLastPos = xz(xAccessor(this.data[this.data.length - 1]));
+          yLastPos = yz(yAccessor(this.data[this.data.length - 1]));
+        } else {
+          xLastPos = chartProps.x(xAccessor(this.data[this.data.length - 1]));
+          yLastPos = chartProps.y(yAccessor(this.data[this.data.length - 1]));
+        }
+    
+        return {x: xLastPos, y: yLastPos};
+    }
+
+    public buildAvatar(chartProps: any) {
+        const pos = this.getLineLastPointPos(chartProps);
+        chartProps.svgBox.append("circle")
+        .style("stroke", "gray")
+        .style("fill", "white")
+        .attr("class", "circle_" + this.name)
+        .attr("r", 14)
+        .attr("cx", pos.x+ 20)
+        .attr("cy", pos.y);
+        chartProps.svgBox.append('image')
+        .attr("class", "image_" + this.name)
+        .attr('xlink:href', 'assets/avatar_' + this.name + '.png')
+        .attr('width', 25)
+        .attr('height', 25)
+        .attr('x', pos.x + 7)
+        .attr('y', pos.y - 13);
+    }
+
+    public updateAvatarPosition(chartProps: any, xz?: any, yz?: any) {
+        const avatarPos = this.getLineLastPointPos(chartProps, xz, yz);
+        chartProps.svgBox.select('.circle_' + this.name)
+        .attr("cx", avatarPos.x)
+        .attr("cy", avatarPos.y);
+        chartProps.svgBox.select('.image_' + this.name)
+        .attr("x", avatarPos.x - 12)
+        .attr("y", avatarPos.y - 13);
+    }
+
+    public addLineLabel(chartProps: any) {
+        const labelPos = this.getLineLastPointPos(chartProps);
+        chartProps.svgBox.append("text")
+        .attr("class", 'line_label_' + this.name)
+        .attr("x", labelPos.x - 10)
+        .attr("y", labelPos.y + 5)
+        .style("font-size", "12px")
+        .attr("dy", ".75em")
+        .text(this.name);
+    }
+
+    public updateLabelPosition(chartProps: any, xz?: any, yz?: any) {
+        const labelPos = this.getLineLastPointPos(chartProps, xz, yz);
+        chartProps.svgBox.select('.line_label_' + this.name)
+        .attr("x", labelPos.x - 50)
+        .attr("y", labelPos.y + 5);
+    }
+
+    public hide() {
+        d3.select('.line.' + this.name).style("opacity", 0);
+        d3.select('.circle_' + this.name).style("opacity", 0);
+        d3.select('.image_' + this.name).style("opacity", 0);
+        d3.select('.line_label_' + this.name).style("opacity", 0);
+    }
+
+    public show() {
+        d3.select('.line.' + this.name).style("opacity", 1);
+        d3.select('.circle_' + this.name).style("opacity", 1);
+        d3.select('.image_' + this.name).style("opacity", 1);
+        d3.select('.line_label_' + this.name).style("opacity", 1);
     }
 }

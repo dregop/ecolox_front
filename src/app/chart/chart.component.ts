@@ -4,6 +4,8 @@ import { Line } from '../models/line';
 import { LineDataApiService } from './services/line-data-api.service';
 import { GraphService } from './services/graph.service';
 import { ToastService, toastType } from '../services/toast.service';
+import { UserFeatures } from '../models/userFeatures';
+import { UserService } from '../services/user.service';
 
 export  class Co2ByOriginByTime {
   co2!: number;
@@ -31,14 +33,11 @@ export class ChartComponent implements OnInit, AfterContentInit {
   private isDataSaved = false;
   public isExtensionMessageDisplayed = false;
   public browserName: string = "Chrome";
-  public chartBuilt = false;
+
 
   @Output() public displayMessageExtension = new EventEmitter<boolean>();
-  @Output() public buildLineChart = new EventEmitter<any>();
-  @Output() public updateLineChart = new EventEmitter<any>();
 
-  constructor(private lineDataApi: LineDataApiService, private graphService: GraphService, public toastService: ToastService) {
-  }
+  constructor(private lineDataApi: LineDataApiService, private graphService: GraphService, public toastService: ToastService, private userService: UserService) {}
   ngAfterContentInit(): void {
     setTimeout(() => { //FIXME: de la belle merde
       if (this.isDataSaved) {
@@ -53,24 +52,15 @@ export class ChartComponent implements OnInit, AfterContentInit {
           this.isExtensionMessageDisplayed = true;
         }
       }
-      console.log(this.isExtensionMessageDisplayed);
+      // console.log(this.isExtensionMessageDisplayed);
     }, 2000);
   }
 
   ngOnInit(): void {
 
-    this.browserName = (function (agent) {        switch (true) {
-      case agent.indexOf("edge") > -1: return "MS Edge";
-      case agent.indexOf("edg/") > -1: return "Edge ( chromium based)";
-      case agent.indexOf("opr") > -1: return "Opera";
-      case agent.indexOf("chrome") > -1: return "Chrome";
-      case agent.indexOf("trident") > -1: return "MS IE";
-      case agent.indexOf("firefox") > -1: return "Mozilla Firefox";
-      case agent.indexOf("safari") > -1: return "Safari";
-      default: return "other";
-      }
-    })(window.navigator.userAgent.toLowerCase());
-    console.log(this.browserName)
+    this.graphService.$browserName.subscribe((browser) => {
+      this.browserName = browser;
+    });
 
     this.displayMessageExtension.emit(false);
 
@@ -82,7 +72,7 @@ export class ChartComponent implements OnInit, AfterContentInit {
       next: (val) => {
         if (val && val.data) {
           this.dataGlobalMeanCo2TimeSerie = JSON.parse(val.data);
-          this.graphService.formatDate(this.dataGlobalMeanCo2TimeSerie);
+          this.dataGlobalMeanCo2TimeSerie = this.graphService.formatDate(this.dataGlobalMeanCo2TimeSerie);
           console.log('# Get global data');
           console.log(this.dataGlobalMeanCo2TimeSerie);
         }
@@ -97,11 +87,11 @@ export class ChartComponent implements OnInit, AfterContentInit {
       next: (val) => {
         if (val && val.data) {
           this.dataDbCo2TimeSerie = JSON.parse(val.data);
-          this.graphService.formatDate(this.dataDbCo2TimeSerie);
+          this.dataDbCo2TimeSerie = this.graphService.formatDate(this.dataDbCo2TimeSerie);
           console.log('# Database data');
           console.log(this.dataDbCo2TimeSerie);
           this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
-          this.fillIndicators();
+          this.graphService.fillIndicators(this.dataSumDbExtensionCo2TimeSerie);
         }
         this.dataSumDbExtensionCo2TimeSerie = [...this.dataDbCo2TimeSerie]; // deep copy
       }
@@ -110,21 +100,21 @@ export class ChartComponent implements OnInit, AfterContentInit {
     window.addEventListener('dataTotalCo2TimeSerie', (e: any) => {
       this.displayMessageExtension.emit(false);
 
-      console.log('# extension data');
-      console.log(e.detail);
+      // console.log('# extension data');
+      // console.log(e.detail);
 
       if (!this.isDataSaved) {
         this.firstDataExtensionCo2TimeSerie = e.detail;
         if (typeof this.firstDataExtensionCo2TimeSerie === 'string') {
           this.firstDataExtensionCo2TimeSerie = JSON.parse(this.firstDataExtensionCo2TimeSerie);
-          this.graphService.formatDate(this.firstDataExtensionCo2TimeSerie);
+          this.firstDataExtensionCo2TimeSerie = this.graphService.formatDate(this.firstDataExtensionCo2TimeSerie);
           console.log(this.firstDataExtensionCo2TimeSerie);
         }
       } else {
         this.dataExtensionCo2TimeSerie = e.detail;
         if (typeof this.dataExtensionCo2TimeSerie === 'string') {
           this.dataExtensionCo2TimeSerie = JSON.parse(this.dataExtensionCo2TimeSerie);
-          this.graphService.formatDate(this.dataExtensionCo2TimeSerie);
+          this.dataExtensionCo2TimeSerie = this.graphService.formatDate(this.dataExtensionCo2TimeSerie);
           console.log(this.dataExtensionCo2TimeSerie);
         }
       }
@@ -132,7 +122,7 @@ export class ChartComponent implements OnInit, AfterContentInit {
         if (!this.isDataSaved) {
           this.isDataSaved = true;
 
-          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
+          
           console.log(this.dataDbCo2TimeSerie);
           console.log(this.firstDataExtensionCo2TimeSerie);
   
@@ -162,6 +152,8 @@ export class ChartComponent implements OnInit, AfterContentInit {
               }
         
               if (val && val.data && this.dataDbCo2TimeSerie.length > 0) {
+                console.log('UPDATE DATA IN DB !!!!!!!!!!!!!!')
+                console.log(this.dataSumDbExtensionCo2TimeSerie);
                 this.updateData({
                   'category': 'internet',
                   'data': JSON.stringify(this.dataSumDbExtensionCo2TimeSerie)
@@ -184,20 +176,27 @@ export class ChartComponent implements OnInit, AfterContentInit {
             this.dataSumDbExtensionCo2TimeSerie.push(entry);
           });
         }
-        this.fillIndicators();
-  
-        
-        if (this.chartBuilt && this.dataSumDbExtensionCo2TimeSerie.length > 0) {
-          this.updateLineChart.emit();
-        } else if (this.dataSumDbExtensionCo2TimeSerie.length > 0 && this.dataGlobalMeanCo2TimeSerie.length > 0) {
-          this.buildLineChart.emit();
-          this.chartBuilt = true;
-        }
+        this.graphService.fillIndicators(this.dataSumDbExtensionCo2TimeSerie);
       }
+    });
 
+    const  barButton = document.getElementById('barButton');
+    const  lineButton = document.getElementById('lineButton');
+    
+    barButton?.addEventListener('click', () => {
+      barButton.className = 'btn-graph activated';     
+      if (lineButton) {
+        lineButton.className = 'btn-graph';
+      }
+    });
+
+    lineButton?.addEventListener('click', () => {
+      lineButton.className = 'btn-graph activated';     
+      if (barButton) {
+        barButton.className = 'btn-graph';
+      }
     });
   }
-
 
   private saveData(data: any) {
     this.lineDataApi
@@ -205,23 +204,24 @@ export class ChartComponent implements OnInit, AfterContentInit {
       .subscribe({
         next: () => {
           console.log('data saved to db');
+          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
         },
         error: (err) => console.log(err.message)
     });
   }
 
   private updateData(data: any) {
+    console.log(data);
     this.lineDataApi
       .updateData(data)
       .subscribe({
         next: () => {
           console.log('data updated to db');
+          dispatchEvent(new CustomEvent('dataTotalCo2TimeSerieReset', {detail: []}));
         },
         error: (err) => console.log(err.message)
       });
   }
-
-
 
   public closeMessageOverlay(): void {
     const dont_show = document.getElementById('dont_show');
@@ -235,26 +235,21 @@ export class ChartComponent implements OnInit, AfterContentInit {
     }
   }
 
-  private fillIndicators(): void {
-    const co2_max = document.getElementById('co2_max');
-    const kmByCar_max = document.getElementById('kmByCar_max');
-    const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
-    if (this.dataSumDbExtensionCo2TimeSerie && this.dataSumDbExtensionCo2TimeSerie.length > 2) {
-      if (co2_max) {
-        co2_max.innerHTML = (this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
-      }
+  public displayBarChart() {
+    const  barButton = document.getElementById('barButton');
+    if (barButton?.className.includes('activated')) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-    
-      if (kmByCar_max) {
-        const kmByCar = Math.trunc(Math.round(1000 * this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);
-
-        kmByCar_max.innerHTML = kmByCar + ' Kms';
-      }
-      if (chargedSmartphones_max) {
-        const chargedSmartphones = Math.round(this.dataSumDbExtensionCo2TimeSerie[this.dataSumDbExtensionCo2TimeSerie.length - 2].co2 / this.GESgCO2ForOneChargedSmartphone);
-
-        chargedSmartphones_max.innerHTML = chargedSmartphones + ' charges';
-      }
+  public displayLineChart() {
+    const  lineButton = document.getElementById('lineButton');
+    if (lineButton?.className.includes('activated')) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

@@ -22,9 +22,29 @@ export class GraphService {
   private tooltipCircle!: any;
   private GESgCO2ForOneKmByCar = 220;
   private GESgCO2ForOneChargedSmartphone = 8.3;
-  public marginYDomain = 50;
+  public browserName: string;
+  public $browserName!: BehaviorSubject<string>;
 
   constructor() {
+    this.$browserName = new BehaviorSubject('Chrome');
+    this.$browserName.subscribe((browser) => {
+      this.browserName = browser;
+    });
+
+    this.browserName = (function (agent) {        switch (true) {
+      case agent.indexOf("edge") > -1: return "MS Edge";
+      case agent.indexOf("edg/") > -1: return "Edge ( chromium based)";
+      case agent.indexOf("opr") > -1: return "Opera";
+      case agent.indexOf("chrome") > -1: return "Chrome";
+      case agent.indexOf("trident") > -1: return "MS IE";
+      case agent.indexOf("firefox") > -1: return "Mozilla Firefox";
+      case agent.indexOf("safari") > -1: return "Safari";
+      default: return "other";
+      }
+    })(window.navigator.userAgent.toLowerCase());
+
+    this.$browserName.next(this.browserName);
+
     this.$onZoom = new BehaviorSubject(false);
     this.$xz = new BehaviorSubject(null);
     this.$yz = new BehaviorSubject(null);
@@ -87,26 +107,40 @@ export class GraphService {
         : formatYear)(date);
   }
 
-  public formatDate(data: Co2ByOriginByTime[]) {
+  public formatDate(data: Co2ByOriginByTime[]):Co2ByOriginByTime[] {
+    let newData: Co2ByOriginByTime[] = [];
     data.forEach(ms => {
-      if (typeof ms.date === 'string') {
-        ms.date = new Date(ms.date);
+      if (typeof ms.date === 'string' || typeof ms.date === 'number') {
+        newData.push({co2: ms.co2, date: new Date(ms.date), origin: ms.origin});
+      } else {
+        newData.push({co2: ms.co2, date: ms.date, origin: ms.origin});
       }
     });
+    return newData;
   }
 
-  public scaleXYDomain(data: Co2ByOriginByTime[], x: any, y: any, marginYDomain: number) {
+  public scaleXYDomain(data: Co2ByOriginByTime[], x: any, y: any) {
     // Scale the range of the data
-    x.domain(
-      d3.extent(data, (d) => {
+    let i = 0;
+    x.domain([
+      d3.min(data, (d) => {
         if (d.date instanceof Date) {
           return (d.date as Date).getTime();
         }
         else {
           return null;
         }
-      }));
-      y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + marginYDomain; })]); // define the range of y axis
+      }),
+      d3.max(data, (d) => {
+        if (d.date instanceof Date) {
+          return (d.date as Date).getTime();
+        }
+        else {
+          return null;
+        }
+      })]
+    );
+    y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + d.co2/15; })]); // define the range of y axis
       // i want y axis to start at the first value recorded not zéro so that it is nicer to see
   }
 
@@ -125,28 +159,6 @@ export class GraphService {
       }
     });
     return reducedData;
-  }
-
-  public updateAvatarPosition(dataTimeSerie: Co2ByOriginByTime[], lineName: string, chartProps: any, xz?: any, yz?: any) {
-    const yAccessor = (d: Co2ByOriginByTime) => d.co2;
-    const xAccessor = (d: Co2ByOriginByTime) => d.date;
-
-    let xLastPos;
-    let yLastPos;
-    if (xz && yz) {
-      xLastPos = xz(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-      yLastPos = yz(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-    } else {
-      xLastPos = chartProps.x(xAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-      yLastPos = chartProps.y(yAccessor(dataTimeSerie[dataTimeSerie.length - 1]));
-    }
-
-    chartProps.svgBox.select('.circle_' + lineName)
-    .attr("cx", xLastPos)
-    .attr("cy", yLastPos);
-    chartProps.svgBox.select('.image_' + lineName)
-    .attr("x", xLastPos - 12)
-    .attr("y", yLastPos - 13);
   }
 
   public getIndexNewLine(valueslines: Line[]) {
@@ -235,7 +247,7 @@ export class GraphService {
       if (closestIndex) {
         closestDataPoint = _this.dataDrawnCo2TimeSerie[closestIndex !== -1 ? closestIndex : 0];
 
-        const Ymax = d3.max(_this.dataDrawnCo2TimeSerie, (d) => { return d.co2 + _this.marginYDomain; });
+        const Ymax = d3.max(_this.dataDrawnCo2TimeSerie, (d) => { return d.co2 + d.co2/15; });
         const Xmax = Math.abs(xAccessor(_this.dataDrawnCo2TimeSerie[_this.dataDrawnCo2TimeSerie.length - 1]) - xAccessor(_this.dataDrawnCo2TimeSerie[0]));
         // console.log(Xmax);
         // console.log(Ymax);
@@ -362,9 +374,37 @@ export class GraphService {
       gy.select('path').style("opacity", "0");
 
       valueslines.forEach( (line: Line) => {
-        line.update(chartProps.svgBox, this.xz, this.yz);
-        this.updateAvatarPosition(line.data, line.name, chartProps, this.xz, this.yz);
+        if (line.name == 'line_global_mean') {
+          line.update(chartProps.svgBox, this.xz, this.yz, d3.curveBundle.beta(0.40));
+        } else {
+          line.update(chartProps.svgBox, this.xz, this.yz,);
+        }
+        line.updateAvatarPosition(chartProps, this.xz, this.yz);
+        line.updateLabelPosition(chartProps, this.xz, this.yz);
       });
+    }
+  }
+
+  public fillIndicators(dataSum: Co2ByOriginByTime[]): void {
+    const co2_max = document.getElementById('co2_max');
+    const kmByCar_max = document.getElementById('kmByCar_max');
+    const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
+    if (dataSum && dataSum.length > 2) {
+      if (co2_max) {
+        co2_max.innerHTML = (dataSum[dataSum.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
+      }
+
+    
+      if (kmByCar_max) {
+        const kmByCar = Math.trunc(Math.round(1000 * dataSum[dataSum.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);
+
+        kmByCar_max.innerHTML = kmByCar + ' Kms';
+      }
+      if (chargedSmartphones_max) {
+        const chargedSmartphones = Math.round(dataSum[dataSum.length - 2].co2 / this.GESgCO2ForOneChargedSmartphone);
+
+        chargedSmartphones_max.innerHTML = chargedSmartphones + ' recharges';
+      }
     }
   }
 }

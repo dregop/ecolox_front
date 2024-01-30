@@ -1,17 +1,13 @@
 .btn-menu {
-    @apply rounded-lg border-2 border-slate-500 bg-slate-300 p-1  pl-2 pr-2 mt-3 lg:text-lg text-base font-bold cursor-default w-full text-left lg:min-w-[200px] min-w-[180px] hover:ml-1
+    @apply rounded-lg border-2 border-slate-500 bg-slate-300 p-1 pl-2 pr-2 mt-3 lg:text-lg text-base font-bold cursor-default w-full text-left lg:min-w-[200px] min-w-[180px] hover:ml-1 h-12
 }
 
 .total {
-     @apply opacity-40 mt-6
+     @apply mt-6
 }
 
-.deplacement {
-    @apply  opacity-40
-}
-
-.maison {
-    @apply  opacity-40
+.total, .deplacement, .maison, .achats {
+    @apply opacity-40
 }
 
 .internet {

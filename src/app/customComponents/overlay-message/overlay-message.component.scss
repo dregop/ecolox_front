@@ -1,0 +1,21 @@
+.levelDiv {
+    @apply lg:basis-1/4 m-2 border-2 mr-4 hover:border-indigo-300
+}
+
+.levelDiv:hover, .selected:hover, #nextImg:hover, #previousImg:hover {
+    cursor: pointer;
+}
+
+.selected {
+    @apply basis-1/4 m-2 border-4 mr-4 border-indigo-300
+}
+
+input {
+    width: 60px;
+    height: 30px;
+    line-height: 1.65;
+    padding: 0;
+    margin: 0;
+    padding-left: 20px;
+    border: 1px solid #eee;
+}
