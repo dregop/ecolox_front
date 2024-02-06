@@ -1,5 +1,8 @@
+<line-chart [dataDb]="dataDbCo2TimeSerie" [dataExt]="dataExtensionCo2TimeSerie" [dataGlobal]="dataGlobalMeanCo2TimeSerie" [firstDataExt]="firstDataExtensionCo2TimeSerie" [dataSumDbExt]="dataSumDbExtensionCo2TimeSerie" *ngIf="displayLineChart()" class="relative z-50"></line-chart>
 
-<div class="absolute right-0 p-2">
+<bar-chart [dataDb]="dataDbCo2TimeSerie" [dataExt]="dataExtensionCo2TimeSerie" [dataGlobal]="dataGlobalMeanCo2TimeSerie" [firstDataExt]="firstDataExtensionCo2TimeSerie" [dataSumDbExt]="dataSumDbExtensionCo2TimeSerie" *ngIf="displayBarChart()" class="relative z-50"></bar-chart>
+
+<div class="absolute top-12 right-0 p-2 z-50">
     <button class="btn-graph activated" id="lineButton" title="Afficher la courbe">
         <img src="../../../assets/chart-line.svg" alt="Bouton Courbe" width="20px" height="20px">
     </button>
@@ -7,10 +10,6 @@
         <img src="../../../assets/chart-bar.svg" width="20px" height="20px" alt="Bouton diagramme" >
     </button>
 </div>
-
-<line-chart [dataDb]="dataDbCo2TimeSerie" [dataExt]="dataExtensionCo2TimeSerie" [dataGlobal]="dataGlobalMeanCo2TimeSerie" [firstDataExt]="firstDataExtensionCo2TimeSerie" [dataSumDbExt]="dataSumDbExtensionCo2TimeSerie" *ngIf="displayLineChart()"></line-chart>
-
-<bar-chart [dataDb]="dataDbCo2TimeSerie" [dataExt]="dataExtensionCo2TimeSerie" [dataGlobal]="dataGlobalMeanCo2TimeSerie" [firstDataExt]="firstDataExtensionCo2TimeSerie" [dataSumDbExt]="dataSumDbExtensionCo2TimeSerie" *ngIf="displayBarChart()"></bar-chart>
 
 <div id="install_extension_message" class="absolute top-1/3 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 lg:p-4 lg:pl-10 p-5 p-12 m-auto"  *ngIf="isExtensionMessageDisplayed">
     <div class="w-full text-center rounded-lg bg-lime-400 shadow-2xl border-2 border-slate-300 p-4 text-slate-800 z-50 text-sm font-semibold">
@@ -34,3 +33,7 @@
 <div id="toast">
     <span>{{ toastService.toastMessage }}</span>
 </div>
+
+<div class="absolute top-3/4 right-1/3" id="cloud"></div>
+<div class="absolute top-2/3 right-2/3" id="cloud2"></div>
+<img class="absolute bottom-0 m-auto left-0 right-0" id="earth" width="600" height="150" src="../../assets/background-earth.png">

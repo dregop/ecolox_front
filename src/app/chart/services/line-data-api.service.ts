@@ -22,12 +22,12 @@ export class LineDataApiService {
       .pipe(catchError(LineDataApiService._handleError));
   }
 
-  saveData(data: Co2ByOriginByTime[]): Observable<any> {
+  saveData(data: any): Observable<any> {
     return this.http
       .post(`${API_URL}/line_chart_data`, data);
   }
 
-  updateData(data: Co2ByOriginByTime[]): Observable<any> {
+  updateData(data: any): Observable<any> {
     return this.http
       .put(`${API_URL}/line_chart_data`, data);
   }

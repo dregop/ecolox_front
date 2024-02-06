@@ -49,3 +49,26 @@
 .activated  {
     @apply rounded-lg border-2 border-lime-400 p-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
 }
+
+#cloud {
+    animation: MyDiv;
+    animation-duration: 10s;
+    animation-iteration-count: 50;
+    animation-timing-function: ease-in;
+    animation-direction: alternate-reverse;
+    background-image: url('../../assets/cloud.png');
+    width: 50px;
+    height: 50px;
+}
+
+#cloud2 {
+    animation: MyDiv2;
+    animation-duration: 20s;
+    animation-iteration-count: 50;
+    animation-timing-function: ease-in;
+    animation-direction: alternate-reverse;
+    background-image: url('../../assets/cloud.png');
+    width: 50px;
+    height: 50px;
+}
+

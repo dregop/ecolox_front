@@ -140,7 +140,7 @@ export class GraphService {
         }
       })]
     );
-    y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + d.co2/15; })]); // define the range of y axis
+    y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + d.co2/100; })]); // define the range of y axis
       // i want y axis to start at the first value recorded not zéro so that it is nicer to see
   }
 
@@ -389,6 +389,9 @@ export class GraphService {
     const co2_max = document.getElementById('co2_max');
     const kmByCar_max = document.getElementById('kmByCar_max');
     const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
+    const oil_max = document.getElementById('oil_max');
+    const coal_max = document.getElementById('coal_max');
+    const uranium_max = document.getElementById('uranium_max');
     if (dataSum && dataSum.length > 2) {
       if (co2_max) {
         co2_max.innerHTML = (dataSum[dataSum.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
@@ -405,6 +408,74 @@ export class GraphService {
 
         chargedSmartphones_max.innerHTML = chargedSmartphones + ' recharges';
       }
+      if (coal_max) {
+        let kgCo2Max = dataSum[dataSum.length - 2].co2 / 1000;
+         // on prend les 60% por charbon, 40% pour pétrole  (j'en sais rien en vrai FIXME:)
+        kgCo2Max = kgCo2Max * 60 / 100;
+        let coal = kgCo2Max * 6000 / 1123;
+        coal_max.innerHTML = ((coal).toFixed(2) as unknown as string) + ' Kg';
+      }
+      // coal 1123kg co2 -> 1tep  https://www.encyclo-ecolo.com/Emissions_de_CO2_par_type_d%27%C3%A9nergie#:~:text=Les%20%C3%89missions%20de%20CO2%20par%20type%20d'%C3%A9nergie,-Les%20%C3%89missions%20de&text=Solaire%20photovolta%C3%AFque%20%3A%20316%20%C3%A9quivalent%20carbone,kg%20%C3%A9quivalent%20carbone%20par%20tep
+      // 1.T Coal -> 0.6 tep
+      // 6 T Coal -> 1tep
+      // 6000 kg coal ->1123 kg co2
+      //  x => co2_max
+      //oil  830 kg co2 -> tep
+      // 1 t de pétrole = 1,05 tep
+      // 0.95T => 1 tep
+      //  950 kg -> 830 kgco2
+      // x  -> co2_max
+      // https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Glossary:Tonnes_of_oil_equivalent_(toe)/fr#:~:text=Les%20coefficients%20de%20conversion%20suivants,de%20diesel%20%3D%200%2C98%20tep
+
+      if (oil_max) {
+        let kgCo2Max = dataSum[dataSum.length - 2].co2 / 1000;
+        // on prend les 60% por charbon, 40% pour pétrole  (j'en sais rien en vrai FIXME:)
+        kgCo2Max = kgCo2Max * 40/100;
+        let oil = kgCo2Max * 950 / 830;
+        oil_max.innerHTML = ((oil).toFixed(2) as unknown as string) + ' L';  
+      }
+
+            //uranium
+            // 4g co2 -> 1kwh
+            // max co2 -> 
+      // 1 kg d'uranium  100 000 kWh
+      // 1/1000g uranium -> 4g co2
+      // x -? co2_max
+      // 
+      // mixe energétique 66% de nucléaire 0.168 * 66 /100 = 
+      if (uranium_max) {
+        let gCo2Max = dataSum[dataSum.length - 2].co2;
+        // on prend 66 %
+        gCo2Max = gCo2Max * 66 /100;
+        let uranium = gCo2Max / 4000;
+        uranium_max.innerHTML = ((uranium).toFixed(2) as unknown as string) + ' g';  
+      }
     }
   }
+
+  public getWeek(date: Date) {
+    let dowOffset = 1; // starts at 1 for Monday
+    let newYear = new Date(date.getFullYear(),0,1);
+    let day = newYear.getDay() - dowOffset; //the day of week the year begins on
+    day = (day >= 0 ? day : day + 7);
+    let daynum = Math.floor((date.getTime() - newYear.getTime() - 
+    (date.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1;
+    let weeknum;
+    //if the year starts before the middle of a week
+    if(day < 4) {
+        weeknum = Math.floor((daynum+day-1)/7) + 1;
+        if(weeknum > 52) {
+          newYear = new Date(date.getFullYear() + 1,0,1);
+          day = newYear.getDay() - dowOffset;
+          day = day >= 0 ? day : day + 7;
+            /*if the next year starts before the middle of
+              the week, it is week #1 of that year*/
+            weeknum = day < 4 ? 1 : 53;
+        }
+    }
+    else {
+        weeknum = Math.floor((daynum+day-1)/7);
+    }
+    return weeknum;
+   }
 }

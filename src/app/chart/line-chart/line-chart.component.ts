@@ -36,7 +36,8 @@ export class LineChartComponent implements OnInit {
   public daysOfWeek!: HTMLCollection;
   public dayOfWeekNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   public mainLine!: Line;
-  public currentSelectedDay = new Date().getDate();
+  public currentSelectedDayOfWeek = new Date().getDay();
+  public currentSelectedDayOfMonth = new Date().getDate();
   public currentSelectedMonth = new Date().getMonth();
   public currentSelectedYear = new Date().getFullYear();
 
@@ -195,13 +196,13 @@ export class LineChartComponent implements OnInit {
     const allButton = document.getElementById('all');
 
     dayButton?.addEventListener('click', () => {
-      console.log('Range : day of month nbr ' + this.currentSelectedDay);
+      console.log('Range : day of month nbr ' + this.currentSelectedDayOfMonth);
       let zoomActif = false;
       if (this.onZoom) {
         zoomActif = true;
         this.onZoom = false; // so we can update
       }
-      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDay && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
+      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDayOfMonth && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
 
       // let day = 1;
       // while (this.dataDbCo2TimeSerieFiltered.length === 0) {
@@ -221,12 +222,12 @@ export class LineChartComponent implements OnInit {
         leftButtonDay.style.opacity = '1';    
       }
   
-      if (this.currentSelectedDay === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
+      if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
         (rightButtonDay as HTMLInputElement).disabled = true;
         rightButtonDay.style.opacity = '0.3';
       }
   
-      if (this.dataSumDbExt.length > 0 && this.currentSelectedDay === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
+      if (this.dataSumDbExt.length > 0 && this.currentSelectedDayOfMonth === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
         (leftButtonDay as HTMLInputElement).disabled = true;
         leftButtonDay.style.opacity = '0.3';
       }
@@ -264,7 +265,7 @@ export class LineChartComponent implements OnInit {
 
 
       const dayOfWeek = new Date(this.dataSumDbExt[this.dataSumDbExt.length - 1].date).getDay();
-      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() > (this.currentSelectedDay - dayOfWeek) && new Date(d.date).getMonth() === this.currentSelectedMonth);
+      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() > (this.currentSelectedDayOfMonth - dayOfWeek) && new Date(d.date).getMonth() === this.currentSelectedMonth);
 
 
       weekButton.className = 'btn-graph activated';
@@ -355,14 +356,23 @@ export class LineChartComponent implements OnInit {
     Array.from(buttons as any).forEach((button: any) => {
       (button as HTMLInputElement).addEventListener(('click'), () => {
         if ((button as HTMLInputElement).id === 'left-button-day') {
-          this.currentSelectedDay -= 1;
+          const newDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth).getTime() - 3600000 * 24; // remove 1 day;
+          this.currentSelectedDayOfWeek = new Date(newDate).getDay();
+          this.currentSelectedDayOfMonth = new Date(newDate).getDate();
+          this.currentSelectedMonth = new Date(newDate).getMonth();
+          this.currentSelectedYear = new Date(newDate).getFullYear();
+
         } else if ((button as HTMLInputElement).id === 'right-button-day') {
-          this.currentSelectedDay += 1;
+          const newDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth).getTime() + 3600000 * 24; // add 1 day;
+          this.currentSelectedDayOfWeek = new Date(newDate).getDay();
+          this.currentSelectedDayOfMonth = new Date(newDate).getDate();
+          this.currentSelectedMonth = new Date(newDate).getMonth();
+          this.currentSelectedYear = new Date(newDate).getFullYear();
         } else {
           return;
         }
 
-        if (this.currentSelectedDay === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
+        if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
           (rightButtonDay as HTMLInputElement).disabled = true;
           rightButtonDay.style.opacity = '0.3';
         } else if (rightButtonDay) {
@@ -370,7 +380,7 @@ export class LineChartComponent implements OnInit {
           rightButtonDay.style.opacity = '1';        
         }
 
-        if (this.currentSelectedDay === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
+        if (this.currentSelectedDayOfMonth === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
           (leftButtonDay as HTMLInputElement).disabled = true;
           leftButtonDay.style.opacity = '0.3';
         } else if (leftButtonDay) {
@@ -378,18 +388,18 @@ export class LineChartComponent implements OnInit {
           leftButtonDay.style.opacity = '1';        
         }
 
-        this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDay && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
+        this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDayOfMonth && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
 
-        const selectedDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDay);
+        const selectedDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth);
         let displayedDay: number;
-        displayedDay = this.currentSelectedDay % 7; // sunday is 0 and monday to 1 so we take the rest
+        displayedDay = this.currentSelectedDayOfWeek % 7; // sunday is 0 and monday to 1 so we take the rest
         if (displayedDay === 0) {
           displayedDay = 7;
         }
         let j = 0;
         Array.from(this.daysOfWeek).forEach((day: any) => {
           j++;
-          if ((j > new Date().getDay() % 7 && day && this.getWeek(new Date()) === this.getWeek(selectedDate)) || this.dataSumDbExtCo2TimeSerieFiltered.length === 0) {
+          if ((j > new Date().getDay() % 7 && day && this.graphService.getWeek(new Date()) === this.graphService.getWeek(selectedDate)) || this.dataSumDbExtCo2TimeSerieFiltered.length === 0) {
             ((day as HTMLInputElement).nextSibling as  HTMLElement).style.opacity = '0.5';
             (day as HTMLInputElement).disabled = true;
           } else {
@@ -418,39 +428,13 @@ export class LineChartComponent implements OnInit {
     });
   }
 
-  private getWeek(date: Date) {
-    let dowOffset = 1; // starts at 1 for Monday
-    let newYear = new Date(date.getFullYear(),0,1);
-    let day = newYear.getDay() - dowOffset; //the day of week the year begins on
-    day = (day >= 0 ? day : day + 7);
-    let daynum = Math.floor((date.getTime() - newYear.getTime() - 
-    (date.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1;
-    let weeknum;
-    //if the year starts before the middle of a week
-    if(day < 4) {
-        weeknum = Math.floor((daynum+day-1)/7) + 1;
-        if(weeknum > 52) {
-          newYear = new Date(date.getFullYear() + 1,0,1);
-          day = newYear.getDay() - dowOffset;
-          day = day >= 0 ? day : day + 7;
-            /*if the next year starts before the middle of
-              the week, it is week #1 of that year*/
-            weeknum = day < 4 ? 1 : 53;
-        }
-    }
-    else {
-        weeknum = Math.floor((daynum+day-1)/7);
-    }
-    return weeknum;
-   }
-
   private removeLinesDaysOfWeek() {
     for (let i = 0; i < 7; i++) {
       let line = d3.select('.line.' + this.dayOfWeekNames[i]);
       let label = d3.select('.line_label_' + this.dayOfWeekNames[i]);
       if (line && label) {
-        line.style('opacity', '0');
-        label.style('opacity', '0');
+        line.remove();
+        label.remove();
         this.linesDaysOfWeek = this.linesDaysOfWeek.filter((line) => line.name !== this.dayOfWeekNames[i]);
       }
     }
@@ -459,7 +443,7 @@ export class LineChartComponent implements OnInit {
   private buildLinesDaysOfWeek() {
     let linesColor = ['#f87171', '#94a3b8', '#a3e635', '#22d3ee', '#818cf8', '#c084fc', '#fb7185'];
     let displayedDay: number;
-    displayedDay = this.currentSelectedDay % 7; // sunday is 0 and monday to 1 so we take the rest
+    displayedDay = this.currentSelectedDayOfWeek % 7; // sunday is 0 and monday to 1 so we take the rest
     if (displayedDay === 0) {
       displayedDay = 7;
     }
@@ -480,7 +464,7 @@ export class LineChartComponent implements OnInit {
         this.daysOfWeek[i].addEventListener('click', (e) => {
 
           let displayedDay: number;
-          displayedDay = this.currentSelectedDay % 7; // sunday is 0 and monday to 1 so we take the rest
+          displayedDay = this.currentSelectedDayOfWeek % 7; // sunday is 0 and monday to 1 so we take the rest
           if (displayedDay === 0) {
             displayedDay = 7;
           }
@@ -515,11 +499,15 @@ export class LineChartComponent implements OnInit {
 
           let valueLineExists = false;
 
+          // We check that we don't have already drawn this line before
           this.valueslines.forEach((el: Line) => {
-            if (el.name === this.dayOfWeekNames[i]) {
-              this.linesDaysOfWeek.push(el);
-              valueLineExists = true; // we set this variable cause the steps with return just bellow doesn't work in loop
-            }
+            this.linesDaysOfWeek.forEach((line) => {
+              if (el.name === this.dayOfWeekNames[i] && line.name === el.name) {
+                this.linesDaysOfWeek.push(el);
+                valueLineExists = true; // we set this variable cause the steps with return just bellow doesn't work in loop
+              }
+            })
+
           });
           if (valueLineExists || i+1 === displayedDay) {
             if (i+1 === displayedDay) {
@@ -534,11 +522,10 @@ export class LineChartComponent implements OnInit {
             return;
           }
 
-          const selectedDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDay);
+          const selectedDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth);
+          console.log(selectedDate);
   
-          const dataDayOfWeek = this.dataDb.filter(d => new Date(d.date).getDate() % 7 === (i + 1) % 7 && this.getWeek(new Date(d.date)) === this.getWeek(selectedDate) && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
-
-          console.log(dataDayOfWeek);
+          const dataDayOfWeek = this.dataDb.filter(d => new Date(d.date).getDay() % 7 === (i + 1) % 7 && this.graphService.getWeek(new Date(d.date)) === this.graphService.getWeek(selectedDate) && new Date(d.date).getFullYear() === this.currentSelectedYear);
 
           // We need to adjuste the dates so they all start from the same point so we can compare them without rescaling
           if (!dataDayOfWeek || dataDayOfWeek.length === 0) {
@@ -741,7 +728,7 @@ export class LineChartComponent implements OnInit {
       this.dataDrawnCo2TimeSerie = [];
     }
 
-    if (this.currentSelectedDay === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear()) {
+    if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear()) {
       this.firstDataExt.forEach((entry) => {  // fill with data extension stored when you were not on the website
         this.dataDrawnCo2TimeSerie.push(entry);
       });
@@ -768,17 +755,17 @@ export class LineChartComponent implements OnInit {
         case 'debutant':
           this.tonnes = 6;
           this.degres = 3.5;
-          threshold = this.tonnes * 1000 * this.userFeatures.internet / 100;
+          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
           break;
         case 'apprenti':
           this.tonnes = 5;
           this.degres = 3;
-          threshold = this.tonnes * 1000 * this.userFeatures.internet / 100;
+          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
           break;
         default:
           this.tonnes = 2;
           this.degres = 1.5;
-          threshold = this.tonnes * 1000 * this.userFeatures.internet / 100;
+          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
           break;
       }
     } else {
@@ -879,6 +866,8 @@ export class LineChartComponent implements OnInit {
         time_range.innerHTML = formatDate(start_date);
       }
     }
+
+
   }
 
   public isDayButtonActivated(): boolean {

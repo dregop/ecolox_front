@@ -63,6 +63,14 @@ export class BannerComponent implements OnInit{
 
   }
 
+  public isInternet() {
+    return this.router.url === '/accueil';
+  }
+
+  public isAchats() {
+    return this.router.url === '/shopping';
+  }
+
   ngOnDestroy() {
   }
 }

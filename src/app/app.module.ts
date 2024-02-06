@@ -19,6 +19,8 @@ import { InternetComponent } from './pages/internet/internet.component';
 import { HouseComponent } from './pages/house/house.component';
 import { RankComponent } from './pages/rank/rank.component';
 import { BarChartComponent } from './chart/bar-chart/bar-chart.component';
+import { ShoppingComponent } from './pages/shopping/shopping.component';
+import { LoaderComponent } from './customComponents/loader/loader.component';
 
 
 @NgModule({
@@ -36,7 +38,9 @@ import { BarChartComponent } from './chart/bar-chart/bar-chart.component';
     InternetComponent,
     HouseComponent,
     RankComponent,
-    BarChartComponent
+    BarChartComponent,
+    ShoppingComponent,
+    LoaderComponent
   ],
   imports: [
     BrowserModule,

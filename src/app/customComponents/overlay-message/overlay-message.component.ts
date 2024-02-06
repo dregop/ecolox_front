@@ -11,10 +11,10 @@ import { UserService } from 'src/app/services/user.service';
 })
 export class OverlayMessageComponent implements OnInit {
 
-  public level!: string;
-  public tonnes!: number;
-  public degres!: number;
-  public dayTreashold!: number;
+  public level = 'debutant';
+  public tonnes = 6;
+  public degres = 3.5;
+  public dayTreashold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100; // treashold in kg co2 for internet TODO: do for all
   public deplacement: number = 30;
   public achats: number = 32;
   public internet: number = 6;
@@ -81,31 +81,13 @@ export class OverlayMessageComponent implements OnInit {
   }
 
   public next() {
-    if (this.level && this.level !== '') {
-      switch(this.level) {
-        case 'debutant':
-          this.tonnes = 6;
-          this.degres = 3.5;
-          break;
-        case 'apprenti':
-          this.tonnes = 5;
-          this.degres = 3;
-          break;
-        default:
-          this.tonnes = 2;
-          this.degres = 1.5;
-          break;
-      }
-      this.dayTreashold = Math.trunc((this.tonnes * 1000) / 365); // treashold in kg co2
-
       const message1 = document.getElementById('message');
       const message2 = document.getElementById('message2');
 
       if (message1 && message2) {
-        message1.style.display = 'none';
+        message1.style.display = 'block';
         message2.style.display = 'block';
       }
-    }
   }
 
   public changeValue(category: string): void {

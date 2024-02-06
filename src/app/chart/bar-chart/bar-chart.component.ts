@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import { Line } from 'src/app/models/line';
 import { UserFeatures } from 'src/app/models/userFeatures';
 import { UserService } from 'src/app/services/user.service';
+import { ToastService, toastType } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'bar-chart',
@@ -27,18 +28,21 @@ export class BarChartComponent implements OnInit {
   public tonnes!: number;
   public degres!: number;
   public userFeatures!: UserFeatures;
-  public currentSelectedDay = new Date().getDate();
+
+  public currentSelectedDayOfWeek = new Date().getDay();
+  public currentSelectedDayOfMonth = new Date().getDate();
   public currentSelectedMonth = new Date().getMonth();
   public currentSelectedYear = new Date().getFullYear();
   public daysOfWeek!: HTMLCollection;
   public dayOfWeekNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
 
   @Input() public dataDb: Co2ByOriginByTime[] = [];
   @Input() public dataExt: Co2ByOriginByTime[] = [];
   @Input() public dataGlobal: Co2ByOriginByTime[] = [];
   @Input() public firstDataExt: Co2ByOriginByTime[] = [];
   @Input() public dataSumDbExt: Co2ByOriginByTime[] = [];
-  constructor(private graphService: GraphService, private userService: UserService) {
+  constructor(private graphService: GraphService, private userService: UserService, public toastService: ToastService) {
     this.userService.$userFeatures.subscribe({
       next: (features) => {
         console.log(features);
@@ -120,9 +124,9 @@ export class BarChartComponent implements OnInit {
     const allButton = document.getElementById('all');
 
     dayButton?.addEventListener('click', () => {
-      console.log('Range : day of month nbr ' + this.currentSelectedDay);
+      console.log('Range : day of month nbr ' + this.currentSelectedDayOfMonth);
 
-      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDay && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
+      this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDayOfMonth && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
 
       // let day = 1;
       // while (this.dataDbCo2TimeSerieFiltered.length === 0) {
@@ -142,12 +146,12 @@ export class BarChartComponent implements OnInit {
         leftButtonDay.style.opacity = '1';    
       }
   
-      if (this.currentSelectedDay === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
+      if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
         (rightButtonDay as HTMLInputElement).disabled = true;
         rightButtonDay.style.opacity = '0.3';
       }
   
-      if (this.dataSumDbExt.length > 0 && this.currentSelectedDay === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
+      if (this.dataSumDbExt.length > 0 && this.currentSelectedDayOfMonth === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
         (leftButtonDay as HTMLInputElement).disabled = true;
         leftButtonDay.style.opacity = '0.3';
       }
@@ -210,14 +214,102 @@ export class BarChartComponent implements OnInit {
       }
       this.updateChart();
     });
+
+    const date_filters = document.getElementById('date-filters');
+    const buttons = date_filters?.getElementsByTagName('button');
+    const rightButtonDay = document.getElementById('right-button-day');
+    const leftButtonDay = document.getElementById('left-button-day');
+    Array.from(buttons as any).forEach((button: any) => {
+      (button as HTMLInputElement).addEventListener(('click'), () => {
+        if ((button as HTMLInputElement).id === 'left-button-day') {
+          const newDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth).getTime() - 3600000 * 24; // remove 1 day;
+          this.currentSelectedDayOfWeek = new Date(newDate).getDay();
+          this.currentSelectedDayOfMonth = new Date(newDate).getDate();
+          this.currentSelectedMonth = new Date(newDate).getMonth();
+          this.currentSelectedYear = new Date(newDate).getFullYear();
+
+        } else if ((button as HTMLInputElement).id === 'right-button-day') {
+          const newDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth).getTime() + 3600000 * 24; // add 1 day;
+          this.currentSelectedDayOfWeek = new Date(newDate).getDay();
+          this.currentSelectedDayOfMonth = new Date(newDate).getDate();
+          this.currentSelectedMonth = new Date(newDate).getMonth();
+          this.currentSelectedYear = new Date(newDate).getFullYear();
+        } else {
+          return;
+        }
+
+        if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear() && rightButtonDay) {
+          (rightButtonDay as HTMLInputElement).disabled = true;
+          rightButtonDay.style.opacity = '0.3';
+        } else if (rightButtonDay) {
+          (rightButtonDay as HTMLInputElement).disabled = false;
+          rightButtonDay.style.opacity = '1';        
+        }
+
+        if (this.currentSelectedDayOfMonth === new Date(this.dataSumDbExt[0].date).getDate() && this.currentSelectedMonth === new Date(this.dataSumDbExt[0].date).getMonth() && this.currentSelectedYear === new Date(this.dataSumDbExt[0].date).getFullYear() && leftButtonDay) {
+          (leftButtonDay as HTMLInputElement).disabled = true;
+          leftButtonDay.style.opacity = '0.3';
+        } else if (leftButtonDay) {
+          (leftButtonDay as HTMLInputElement).disabled = false;
+          leftButtonDay.style.opacity = '1';        
+        }
+
+        this.dataSumDbExtCo2TimeSerieFiltered = this.dataSumDbExt.filter(d => new Date(d.date).getDate() === this.currentSelectedDayOfMonth && new Date(d.date).getMonth() === this.currentSelectedMonth && new Date(d.date).getFullYear() === this.currentSelectedYear);
+
+        const selectedDate = new Date(this.currentSelectedYear, this.currentSelectedMonth, this.currentSelectedDayOfMonth);
+        let displayedDay: number;
+        displayedDay = this.currentSelectedDayOfWeek % 7; // sunday is 0 and monday to 1 so we take the rest
+        if (displayedDay === 0) {
+          displayedDay = 7;
+        }
+        let j = 0;
+        Array.from(this.daysOfWeek).forEach((day: any) => {
+          j++;
+          if ((j > new Date().getDay() % 7 && day && this.graphService.getWeek(new Date()) === this.graphService.getWeek(selectedDate)) || this.dataSumDbExtCo2TimeSerieFiltered.length === 0) {
+            ((day as HTMLInputElement).nextSibling as  HTMLElement).style.opacity = '0.5';
+            (day as HTMLInputElement).disabled = true;
+          } else {
+            ((day as HTMLInputElement).nextSibling as  HTMLElement).style.opacity = '1';
+            (day as HTMLInputElement).disabled = false;
+          }
+        });
+
+        if (this.daysOfWeek && this.daysOfWeek.length > 0) {
+          for (let i = 0; i < this.daysOfWeek.length; i++) {
+            (this.daysOfWeek[i] as HTMLInputElement).checked = false;
+            if (i+1 === displayedDay) {
+              (this.daysOfWeek[i] as HTMLInputElement).checked = true;   
+            }
+          }
+        }
+
+        if (!this.dataSumDbExtCo2TimeSerieFiltered || this.dataSumDbExtCo2TimeSerieFiltered.length === 0) {
+          this.toastService.handleToast(toastType.Info, 'Pas de donnée enregistrée disponible pour ce jour');
+          return;
+        }
+
+        // this.removeLinesDaysOfWeek();
+        this.updateChart();
+      });
+    });
   }
 
-  private groupByDay(data: Co2ByOriginByTime[]): Co2ByOriginByTime[] {
+  private groupByDays(data: Co2ByOriginByTime[]): Co2ByOriginByTime[] {
     let newData : Co2ByOriginByTime[] = [];
     const groupedData = d3.group(data, d => new Date(d.date).getDate());
     groupedData.forEach((entry: Co2ByOriginByTime[]) => {
       const co2 = entry[entry.length - 1].co2 - entry[0].co2;
       newData.push({co2: co2, date: new Date(2024, 0, entry[0].date.getDate())});
+    });
+    return newData;
+  }
+
+  private groupByHours(data: Co2ByOriginByTime[]): Co2ByOriginByTime[] {
+    let newData : Co2ByOriginByTime[] = [];
+    const groupedData = d3.group(data, d => new Date(d.date).getHours());
+    groupedData.forEach((entry: Co2ByOriginByTime[]) => {
+      const co2 = entry[entry.length - 1].co2 - entry[0].co2;
+      newData.push({co2: co2, date: new Date(2024, 0, entry[0].date.getDate(), entry[0].date.getHours())});
     });
     return newData;
   }
@@ -232,7 +324,7 @@ export class BarChartComponent implements OnInit {
 
     this.chartProps = {};
     
-    this.dataDrawnCo2TimeSerie = this.groupByDay(this.dataSumDbExt);
+    this.dataDrawnCo2TimeSerie = this.groupByDays(this.dataSumDbExt);
     console.log(this.dataDrawnCo2TimeSerie);
     // propage 
     this.graphService.$dataDrawnCo2TimeSerie.next(this.dataDrawnCo2TimeSerie);
@@ -383,17 +475,26 @@ export class BarChartComponent implements OnInit {
       this.dataDrawnCo2TimeSerie = [];
     }
 
-    if (this.currentSelectedDay === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear()) {
+    if (this.currentSelectedDayOfMonth === new Date().getDate() && this.currentSelectedMonth === new Date().getMonth() && this.currentSelectedYear === new Date().getFullYear()) {
       this.firstDataExt.forEach((entry) => {  // fill with data extension stored when you were not on the website
         this.dataDrawnCo2TimeSerie.push(entry); //DIFFERENT THAN IN LINE CHART I NNEED TO PUT IT BEFORE
       });
       this.dataExt.forEach((entry) => {
         this.dataDrawnCo2TimeSerie.push(entry);
       });
-
-      this.dataDrawnCo2TimeSerie = this.groupByDay(this.dataDrawnCo2TimeSerie);
+      const dayButton = document.getElementById('day');
+      if (dayButton?.className.includes('activated')) {
+        this.dataDrawnCo2TimeSerie = this.groupByHours(this.dataDrawnCo2TimeSerie);
+       } else {
+        this.dataDrawnCo2TimeSerie = this.groupByDays(this.dataDrawnCo2TimeSerie);
+       }
     } else {
-      this.dataDrawnCo2TimeSerie = this.groupByDay(this.dataDrawnCo2TimeSerie);
+      const dayButton = document.getElementById('day');
+      if (dayButton?.className.includes('activated')) {
+        this.dataDrawnCo2TimeSerie = this.groupByHours(this.dataDrawnCo2TimeSerie);
+       } else {
+        this.dataDrawnCo2TimeSerie = this.groupByDays(this.dataDrawnCo2TimeSerie);
+       }
     }
     // propage 
     this.graphService.$dataDrawnCo2TimeSerie.next(this.dataDrawnCo2TimeSerie);
@@ -458,9 +559,29 @@ export class BarChartComponent implements OnInit {
     this.chartProps.y
     .domain([0, d3.max(this.dataDrawnCo2TimeSerie, (d) => d.co2 as any + d.co2/15)]); // as any -> otherwise error
 
+    const areaGradient = this.chartProps.svg.append("defs")
+    .append("linearGradient")
+    .attr("id","areaGradient")
+    .attr("x1", "0%").attr("y1", "0%")
+    .attr("x2", "0%").attr("y2", "100%");
+    
+    areaGradient.append("stop")
+    .attr("offset", "1%")
+    .attr("stop-color", "#FF8729")
+    .attr("stop-opacity", 0.9);
+    areaGradient.append("stop")
+    .attr("offset", "40%")
+    .attr("stop-color", "orange")
+    .attr("stop-opacity", 0.7);
+    areaGradient.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "white")
+    .attr("stop-opacity", 0.3);
+
     // update bar chart
     this.bars
     .data(this.dataDrawnCo2TimeSerie)
+    .style("fill", "url(#areaGradient)")
     .join("rect")
       .attr("x", (d: Co2ByOriginByTime) => this.chartProps.x(d.date) + this.chartProps.margin.left)
       .attr("y", (d: Co2ByOriginByTime) => this.chartProps.y(d.co2) + this.chartProps.margin.top - 1)

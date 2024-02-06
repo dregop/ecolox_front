@@ -4,11 +4,12 @@ import { Co2ByOriginByTime } from "../chart/chart.component";
 export class Line {
     public name: string;
     public data: Co2ByOriginByTime[];
-    private color: string;
+    public color: string;
     private category?: string;
     private xChartProps: any;
     private yChartProps: any;
     private lineValues: any;
+    private areaGradient: any;
 
     constructor(name: string, data: Co2ByOriginByTime[], xChartProps: any, yChartProps: any, color: string, curveType?: d3.CurveFactory | d3.CurveBundleFactory, category?: string) {
         this.name = name;
@@ -42,7 +43,23 @@ export class Line {
     }
 
     public update(svg: any, x: any, y: any, curveType?: d3.CurveFactory | d3.CurveBundleFactory): void {
+        this.areaGradient = svg.append("defs")
+        .append("linearGradient")
+        .attr("id","areaGradient_" + this.name)
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "0%").attr("y2", "100%");
+        
+        this.areaGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", this.color)
+        .attr("stop-opacity", 0.3);
+        this.areaGradient.append("stop")
+        .attr("offset", "120%")
+        .attr("stop-color", "white")
+        .attr("stop-opacity", 0);
+    
         svg.select('.line.' + this.name)
+        .style("fill", "url(#areaGradient_" + this.name + ")")
         .attr('d', this.define(this.data, x, y, curveType));
     }
 

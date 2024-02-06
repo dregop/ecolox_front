@@ -1,68 +1,75 @@
-<div id="overlay" class="absolute top-0 left-0 w-full h-full bg-slate-800 opacity-30 z-40">
+<div id="overlay" class="absolute top-0 left-0 w-full h-full bg-slate-800 opacity-70 z-50">
 </div>
-<div id="message" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto">
-  <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
-    <span class="text-sm font-semibold">Quel niveau as-tu sur l'écologie ?</span><br>
 
-    <div class="flex lg:flex-row flex-col p-2">
+<!-- <div id="message" class=" left-0 right-0 w-3/4 z-50 h-full m-auto lg:pr-24 pr-8 pl-8 lg:pl-24">
+    <div class="flex flex-row items-center top_overlay">
+        <img class="border-4 rounded-full" src="../../assets/buddy.png" width="80">
+        <span class="lg:text-2xl text-base font-semibold ml-4">Pour commencer ...</span>
+    </div>
+  <div class="message_container">
+    <div class="flex lg:flex-row flex-col items-center">
         <div class="levelDiv" id="debutant" (click)="selectLevel('debutant')">
             Débutant<br>
-            <img src="../../../assets/medal-debutant.svg" alt="Médail Débutant" width="80px" class="p-2 inline"><br>
-            <span class="text-xs">Peu de connaissance, objectifs faciles</span>
+            <img src="../../../assets/medal-debutant.svg" alt="Médail Débutant" class="p-2 inline w-12 md-16 lg:w-20"><br>
+            <span class="text-sm">Peu de connaissance, objectifs faciles</span>
         </div>
-        <div class="levelDiv" id="apprenti" (click)="selectLevel('apprenti')">
-            Apprenti<br>
-            <img src="../../../assets/medal-apprenti.svg" alt="Médail Apprenti" width="80px" class="p-2 inline"><br>
-            <span class="text-xs">Bonne base de connaissance, objectifs moyens</span>
+        <div class="levelDiv" id="apprenti">
+            <div class="absolute lg:w-1/6 w-1/2 opacity-60">
+                Apprenti<br>
+                <img src="../../../assets/medal-apprenti.svg" alt="Médail Apprenti"  class="p-2 inline w-12 md-16 lg:w-20">
+            </div>
+            <div class="w-full h-full relative">
+               <img src="../../../assets/lock.svg" alt="Vérouillé" class="inline lg:mt-8 mt-4 w-12 md-16 lg:w-20"> 
+            </div>
         </div>
         <div class="levelDiv">
             <div class="absolute lg:w-1/6 w-1/2 opacity-60">
                 Expert<br>
-                <img src="../../../assets/medal-expert.svg" alt="Médail Expert" width="80px" class="p-2 inline">
+                <img src="../../../assets/medal-expert.svg" alt="Médail Expert"  class="p-2 inline w-12 md-16 lg:w-20">
             </div>
             <div class="w-full h-full relative">
-               <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4"> 
+               <img src="../../../assets/lock.svg" alt="Vérouillé" class="inline lg:mt-8 mt-4 w-12 md-16 lg:w-20"> 
             </div>
         </div>
         <div class="levelDiv">
             <div class="absolute lg:w-1/6 w-1/2 opacity-60">
                 Maître<br>
-                <img src="../../../assets/medal-maitre.svg" alt="Médail Maître" width="80px" class="p-2 inline">
+                <img src="../../../assets/medal-maitre.svg" alt="Médail Maître" width="80px" class="p-2 inline w-12 md-16 lg:w-20">
             </div>
             <div class="w-full h-full relative">
-                <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4"> 
+                <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4 w-12 md-16 lg:w-20"> 
              </div>
         </div>
     </div>
-
-    <div *ngIf="isSelected()">
-        <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" width="50px" class="inline" title="Suivant" id="nextImg">
-    </div>
-    <!-- <div>
+     <div>
         <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
         <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
-    </div> -->
+    </div> 
 
-
-    <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
-    <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+    <button (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+    <div *ngIf="isSelected()">
+        <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" width="70px" class="inline nextPrevButton" title="Suivant">
+    </div>
   </div>
-</div>
+</div> -->
 
-<div id="message2" style="display:none" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto">
-  <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
-    <p class="text-sm font-semibold">Tu as choisi le niveau <span class="text-lime-600 text-lg">{{ level }}</span></p><br>
-
+<div id="message" class="left-0 right-0 top-0 bottom-0 lg:w-2/3 w-3/4 z-50 m-auto lg:pr-12 pr-8 pl-8 lg:pl-12 rounded-lg text-slate-800">
+  <div class="message_container">
+    <div class="flex flex-row items-center mb-4 text-left">
+        <img class="border-4 rounded-full w-16 " src="../../assets/buddy.png">
+        <p class="lg:text-2xl text-base font-semibold ml-4 ">Tu es niveau <span id="levelTag" class="text-slate-600 lg:text-xl text-lg uppercase font-bold">{{ level }}</span><br> <span class="text-base">Révèle les défis et agmente en niveau !</span> <span class="text-xs"> Car la c'est pas ouf</span></p>
+    </div>
     <p>
-        Ton crédit carbonne est de <span style="color: red">{{ tonnes }} Tonnes de CO2</span> par an<br>
-        Ce qui équivaut à vivre une sur une planete à +<span style="color: red">{{ degres }} degrés</span> par rapport à la température des années 1900<br>
+        <span class="lg:text-2xl text-base font-semibold">Crédit carbonne <span class="text-red-600 font-bold">{{ tonnes }} Tonnes CO<sub>2</sub>e</span> / An</span><br>
+        <span class="lg:text-base text-sm text-slate-800">Ce qui équivaut à vivre une sur une planete à +<span class="text-red-600 font-semibold">{{ degres }} degrés</span> par rapport à la température des années 1900<br></span>
+    </p>
+    <br><br>
+    <p>
+        <span class="lg:text-2xl text-base font-semibold">Limite pour internet : <span class="text-red-600 font-bold">{{ dayTreashold }} kg CO<sub>2</sub>e</span> / Jour</span><br>
+        <span class="lg:text-base text-sm text-slate-800">On part du principe qu'internet ne represente que <span class="text-red-600 font-semibold">4 %</span> sur le total des émissions d'une journée.<br></span>
     </p>
 
-    <p>
-        Ta limite journalière est donc fixée à <span style="color: red">{{ dayTreashold }} kg de CO2</span> par jour pour le TOTAL de toutes les catégories.
-    </p>
-
-    <p class="mt-4">
+    <!-- <p class="mt-4">
         Comment souhaite tu répartir ton crédit en fonction de ces différentes catégories ? <br> 
         <span class="text-xs">(Si tu ne sais pas, tu peux laisser les valeurs par défaut. Tu pourras les modifier plus tard).</span>
     </p>
@@ -72,14 +79,55 @@
         MAISON : <input type="number" min="1" [max]="maisonMax" step="1" [(ngModel)]="maison" (ngModelChange)="changeValue('maison')"> %<br>
         ACHATS : <input type="number" min="1" [max]="achatsMax" step="1" [(ngModel)]="achats" (ngModelChange)="changeValue('achats')"> %<br>
         INTERNET : <input type="number" min="1" [max]="10" step="1" [(ngModel)]="internet" (ngModelChange)="changeValue('internet')"> % Max : 10%<br>
-    </p>
+    </p> -->
 
-    <img src="../../../assets/previous.svg" alt="Précédent" width="50px" class="inline" title="Précédent" id="previousImg" (click)="previous()">
-    |
+    <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-14"><img src="../../../assets/close.svg"></button>
 
-    <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 text-lg hover:bg-amber-400 active:bg-amber-500 shadow-2xl" (click)="validate()">VALIDER</button>
 
-    <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
-    <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+    <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
+    
+    <!-- <div class="flew flex-row items-center">
+        <img src="../../../assets/previous.svg" alt="Précédent" width="50px" class="inline" title="Précédent" id="previousImg" (click)="previous()">
+        |
+        <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 text-lg hover:bg-amber-400 active:bg-amber-500 shadow-2xl" (click)="validate()">VALIDER</button>
+    </div> -->
+
   </div>
+</div>
+
+  <div id="message2" style="display: none;" class="left-0 right-0 top-0 bottom-0 lg:w-2/3 w-3/4 z-50 m-auto lg:pr-12 pr-8 pl-8 lg:pl-12 rounded-lg text-slate-800">
+    <div class="message_container">
+          <h2 class="lg:text-xl text-base font-bold mb-2 uppercase">Défis <img src="../../assets/internet.svg" alt="Internet" height="30px" width="30px" class="inline">
+            pour passer au niveau suivant</h2>
+
+          <div class="div_defi">
+            <img class="w-8"  src="../../../assets/check.svg">
+            <span class="ml-8">- - - Respecter la limite journalière pendant une journée</span>
+          </div>
+          <div class="div_defi">
+            <img class="w-6"  src="../../../assets/cross.svg">
+            <span class="ml-10">- - - Respecter la limite journalière pendant une semaine</span>
+          </div>
+          <div class="div_defi">
+            <img class="w-6"  src="../../../assets/cross.svg">
+            <span class="ml-10">- - - Fixer la qualité maximum des vidéos à 720p</span>
+          </div>
+          <div class="div_defi">
+            <img class="w-6"  src="../../../assets/cross.svg">
+            <span class="ml-10">- - - Inviter un ami</span>
+          </div>
+          <div class="div_defi">
+            <img class="w-6"  src="../../../assets/cross.svg">
+            <span class="ml-10">- - - Répondre bon au questionnaire</span>
+          </div>
+  
+  
+      <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-12"><img src="../../../assets/close.svg"></button>
+  
+  
+      <img (click)="next()" src="../../../assets/next.svg" alt="Suivant" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
+
+      <img (click)="next()" src="../../../assets/previous.svg" alt="Précédent" class="absolute left-0 bottom-0 top-0 left-0 m-auto prevButton w-12" title="Précédent">
+  
+    </div>
 </div>
