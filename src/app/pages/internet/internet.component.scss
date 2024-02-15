@@ -1,0 +1,51 @@
+
+#toast {
+    visibility: hidden;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+    padding: 5px;
+    font-weight: 600;
+    &.show {
+        visibility: visible;
+        -webkit-animation: fadein 0.3s, fadeout 0.5s 3.7s;
+        animation: fadein 0.3s, fadeout 0.5s 3.7s;
+    }
+}
+
+//#toast.show {
+//    visibility: visible;
+//    -webkit-animation: fadein 0.3s, fadeout 0.5s 3.7s;
+//    animation: fadein 0.3s, fadeout 0.5s 3.7s;
+//}
+
+/* Animations to fade the toast in and out */
+@-webkit-keyframes fadein {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+  
+@keyframes fadein {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+  
+@-webkit-keyframes fadeout {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+  
+@keyframes fadeout {
+    from {opacity: 1}
+    to {opacity: 0}
+}
+
+.btn-graph {
+    @apply rounded-lg border-2 border-slate-400 p-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
+}
+
+.activated  {
+    @apply rounded-lg border-2 border-lime-400 p-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
+}

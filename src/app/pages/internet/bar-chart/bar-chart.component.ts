@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { GraphService } from '../services/graph.service';
-import { Co2ByOriginByTime } from '../chart.component';
+import { Co2ByOriginByTime } from '../internet.component';
 import * as d3 from 'd3';
 import { Line } from 'src/app/models/line';
 import { UserFeatures } from 'src/app/models/userFeatures';

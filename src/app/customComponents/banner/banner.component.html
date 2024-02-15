@@ -6,26 +6,30 @@
         <img src="../../../assets/avatar.png" alt="Avatar" class="h-2/3 pl-2 pr-2" />
         <span class=" pl-1 pr-2">{{ this.currentUser.getName() }}</span>
     </button>
-    <div id="level" class="items-center flex flex-row-reverse mr-1 ">
+    <div id="level" class="items-center flex flex-row-reverse mr-1 p-1 rounded-lg bg-stone-200 text-slate-800">
+        <div class="flex flex-row ml-8 mr-2 items-center">
+            <img src="../../../assets/crossed-swords.svg" width="20px" height="20px">
+            <div class="ml-2"><span class="font-semibold">1</span> / <span class="font-semibold">12</span></div>
+        </div>
         <ng-container *ngIf="(userFeatures && userFeatures.level === 'apprenti'); else debutant">
             <button class="items-center flex flex-row-reverse" (click)="displayOverLayMessage()">
-                <span class="text-lg mr-2">Apprenti</span>
-                <img src="../../assets/medal-apprenti.svg" width="40px" height="40px">
+                <span class="text-lg mr-2 font-semibold">Apprenti</span>
+                <img src="../../assets/medal-apprenti.svg" width="30px" height="30px">
             </button>
         </ng-container>
         <ng-template #debutant>
             <button class="items-center flex flex-row-reverse" (click)="displayOverLayMessage()">
-                <span class="text-lg mr-2">Débutant</span>
-                <img src="../../assets/medal-debutant.svg" width="40px" height="40px">
+                <span class="text-lg mr-2 font-semibold">Débutant</span>
+                <img src="../../assets/medal-debutant.svg" width="30px" height="30px">
             </button>
         </ng-template>
     </div>
-    <div id="banner_indicators" class="flex flex-row-reverse items-center mr-2 h-full">
+    <div id="banner_indicators" class="flex flex-row-reverse items-center mr-2">
         <!-- <div class="flex flex-row items-center ml-2 border-l-4 border-r-4 border-slate-200 h-full p-1">
             <img src="../../../assets/eolic.svg" width="35px" height="35px" class="mr-1">
             <span class="text-lime-600">0 Mw/h</span>
         </div> -->
-        <div class="flex flex-row items-center ml-2 border-l-4 border-r-4 border-slate-200 h-full p-1">
+        <!-- <div class="flex flex-row items-center ml-2 border-l-4 border-r-4 border-slate-200 h-full p-1">
             <img src="../../../assets/barrels-oil.svg" width="35px" height="35px" class="mr-1">
             <span id="oil_max" class="text-red-500">0 L</span>
         </div>
@@ -36,11 +40,11 @@
         <div class="flex flex-row items-center ml-2 border-r-4 border-slate-200 h-full p-1">
             <img src="../../../assets/uranium.png" width="35px" height="35px" class="mr-1">
             <span id="uranium_max" class="text-red-600">0 g</span>
-        </div>
-        <div class="flex flex-row items-center border-r-4 border-slate-200 h-full p-1">
-            <img src="../../assets/co2.svg" width="40px" height="40px" class="mr-1">
-            <span id="co2_max" class="text-red-600">0 gCO<sub>2</sub>e</span>
-
+        </div> -->
+        <div class="flex flex-row items-center h-full p-1 bg-stone-200">
+            <span class="font-bold text-xl text-slate-800 mr-2">GLOBAL</span>
+            <span id="co2_max" class="text-red-600 mr-1 text-xl font-semibold mr-4 p-1">0 gCO<sub>2</sub>e</span>
+            <img src="../../assets/co2.svg" width="40px" height="40px" >
         </div>
             <!-- <img src="../../assets/is-approximately-equal.svg" width="25px" height="25px" class="mr-4">
             <div class="flex flex-row items-center mr-4">
@@ -55,18 +59,6 @@
                 <span id="chargedSmartphones_max">0 recharges</span>
             </div> -->
     </div>
-
-    <div class="absolute lg:w-1/4 w-1/2 left-0 right-0 m-auto lg:top-14 top-12 items-center bg-white border-2 text-center" *ngIf="isInternet()">
-            <img src="../../assets/internet.svg" alt="Internet" height="30px" width="30px" class="inline mr-2">
-            <span class="inline mr-4">INTERNET</span>
-            <span id="time_range"></span>
-    </div>
-
-    <div class="absolute lg:w-1/4 w-1/2 left-0 right-0 m-auto lg:top-14 top-12 items-center bg-white border-2 text-center" *ngIf="isAchats()">
-        <img src="../../assets/shopping.svg" alt="Achats" height="30px" width="30px" class="inline mr-2">
-        <span class="inline mr-4">ACHATS</span>
-        <span id="time_range"></span>
-</div>
 
     <div class="absolute left-0 mt-1">
         <img src="../../assets/ecobuddy_nametag.svg" alt="Eco Buddy" class="lg:w-3/4 w-1/2">

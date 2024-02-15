@@ -6,7 +6,7 @@ import { API_URL } from 'src/environments/env.dev';
 @Injectable({
   providedIn: 'root'
 })
-export class ShoppingService {
+export class ShoppingApiService {
   constructor(private http: HttpClient) { }
 
   private static _handleError(err: HttpErrorResponse | any) {

@@ -1,13 +1,28 @@
 <div id="overlay" class="absolute top-0 left-0 w-full h-full bg-slate-800 opacity-70 z-50">
 </div>
 
-<!-- <div id="message" class=" left-0 right-0 w-3/4 z-50 h-full m-auto lg:pr-24 pr-8 pl-8 lg:pl-24">
-    <div class="flex flex-row items-center top_overlay">
+<div id="message">
+    <div class="basis-1/6 flex flex-row items-center">
         <img class="border-4 rounded-full" src="../../assets/buddy.png" width="80">
-        <span class="lg:text-2xl text-base font-semibold ml-4">Pour commencer ...</span>
+        <span class="lg:text-xl text-base font-semibold ml-4">Salut jeune padawane, <br> Je suis Buddy, ton pote écolo !</span>
     </div>
-  <div class="message_container">
-    <div class="flex lg:flex-row flex-col items-center">
+  <div class="basis-5/6 message_container lg:text-xl">
+    <div class="flex flex-row items-center mt-8 text-left">
+      <img src="../../../assets/logo_planete.png" width="150" height="150" alt="Logo Eco Buddy" class="basis-1/4">
+      <p class="basis-3/4">
+        Dans cette nouvelle aventure tu ne vas pas devoir affronter des monstres démoniaques et autres créatures malfaisantes. Et non c’est tes émissions de Co2 que tu vas affronter ! Alors en avant et place à la sobriété ! 
+        <br><br>
+        Notre planète se réchauffe ! Nous recherchons des braves gens afin de nous aider à contrer ce terrible événement. <br>
+        Si tu te sens d'attaque pour relever les défis, clique sur la flêche bleu à droite !
+      </p>
+    </div> 
+
+    <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-14"><img src="../../../assets/close.svg"></button>
+
+
+    <img (click)="next('message', 'message2')" src="../../../assets/next.svg" alt="Suivant image" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
+
+    <!-- <div class="flex lg:flex-row flex-col items-center">
         <div class="levelDiv" id="debutant" (click)="selectLevel('debutant')">
             Débutant<br>
             <img src="../../../assets/medal-debutant.svg" alt="Médail Débutant" class="p-2 inline w-12 md-16 lg:w-20"><br>
@@ -40,34 +55,57 @@
                 <img src="../../../assets/lock.svg" alt="Vérouillé" width="100px" class="inline lg:mt-8 mt-4 w-12 md-16 lg:w-20"> 
              </div>
         </div>
-    </div>
-     <div>
+    </div> -->
+     <!-- <div>
         <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
         <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
-    </div> 
+    </div>  -->
 
-    <button (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
-    <div *ngIf="isSelected()">
+    <!-- <div *ngIf="isSelected()">
         <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" width="70px" class="inline nextPrevButton" title="Suivant">
-    </div>
+    </div> -->
   </div>
-</div> -->
+</div>
 
-<div id="message" class="left-0 right-0 top-0 bottom-0 lg:w-2/3 w-3/4 z-50 m-auto lg:pr-12 pr-8 pl-8 lg:pl-12 rounded-lg text-slate-800">
-  <div class="message_container">
-    <div class="flex flex-row items-center mb-4 text-left">
-        <img class="border-4 rounded-full w-16 " src="../../assets/buddy.png">
-        <p class="lg:text-2xl text-base font-semibold ml-4 ">Tu es niveau <span id="levelTag" class="text-slate-600 lg:text-xl text-lg uppercase font-bold">{{ level }}</span><br> <span class="text-base">Révèle les défis et agmente en niveau !</span> <span class="text-xs"> Car la c'est pas ouf</span></p>
+<div id="message2" style="display: none;">
+  <div class="basis-1/6 flex flex-row items-center">
+    <img class="border-4 rounded-full" src="../../assets/buddy.png" width="80">
+    <span class="lg:text-xl text-base font-semibold ml-4">Pour devenir un héros et sauver la planète, tu vas devoir affronter de nombreux défis. Voyons d'abord ensemble les règles de bases pour un débutant comme toi (Il n'y a pas de mal, j'étais comme toi au début gros nulle).</span><br>
+
+  </div>
+
+  <div class="basis-5/6 message_container lg:text-xl">
+    <div class="flex flex-row text-left h-full mt-8">
+      <div class="basis-1/4">
+        <img src="../../../assets/logo_planete.png" alt="Logo Eco Buddy">
+      </div>
+
+      <div class="basis-3/4 h-full">
+        <div class="overflow-auto h-3/4">
+          <p>
+            On va commencer large : <br>
+            <span class="lg:text-2xl text-base font-semibold">Ton Crédit carbonne est de <span class="text-red-600 font-bold">{{ tonnes }} Tonnes de CO<sub>2</sub>e</span> / An.</span>
+            <!-- <span class="lg:text-base text-sm text-slate-800">Ce qui équivaut à vivre une sur une planete à +<span class="text-red-600 font-semibold">{{ degres }} degrés</span> par rapport à la température des années 1900<br></span> -->
+            C'est tout ce que tu peux émettres en une année ! <br>
+            Les plus valeureux d'entre nous on maintenant des crédits carbonnes approchant les 2 Tonnes de CO<sub>2</sub>e / An mais tu n'en es pas encore la.
+          </p>
+          <br>
+          <p>
+            6 Tonnes de Co2/ An équivaut à vivre une sur une planete à +<span class="text-red-600 font-semibold">{{ degres }} degrés</span> par rapport à la température des années 1900. Evidemment on préferait éviter ça, mais puisque tu débutes, on commence doucement tu vois :D
+          </p>
+          <br>
+          <p>
+            Chaque catégories sur le site (INTERNET, ACHATS, MAISON, DEPLACEMENT) émet des quantités très différentes de CO2. Internet par exemple émet beaucoup moins que les autres catégories. Néanmoins il est intéressant de savoir que cela contribue quand même (de 4 à 6% environ par rapport au GLOBAL).
+          </p>
+        </div>
+
+      </div>
     </div>
-    <p>
-        <span class="lg:text-2xl text-base font-semibold">Crédit carbonne <span class="text-red-600 font-bold">{{ tonnes }} Tonnes CO<sub>2</sub>e</span> / An</span><br>
-        <span class="lg:text-base text-sm text-slate-800">Ce qui équivaut à vivre une sur une planete à +<span class="text-red-600 font-semibold">{{ degres }} degrés</span> par rapport à la température des années 1900<br></span>
-    </p>
-    <br><br>
-    <p>
+    
+    <!-- <p>
         <span class="lg:text-2xl text-base font-semibold">Limite pour internet : <span class="text-red-600 font-bold">{{ dayTreashold }} kg CO<sub>2</sub>e</span> / Jour</span><br>
         <span class="lg:text-base text-sm text-slate-800">On part du principe qu'internet ne represente que <span class="text-red-600 font-semibold">4 %</span> sur le total des émissions d'une journée.<br></span>
-    </p>
+    </p> -->
 
     <!-- <p class="mt-4">
         Comment souhaite tu répartir ton crédit en fonction de ces différentes catégories ? <br> 
@@ -83,8 +121,9 @@
 
     <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-14"><img src="../../../assets/close.svg"></button>
 
+    <img (click)="previous('message2', 'message')" src="../../../assets/previous.svg" alt="Précédent" class="absolute left-0 bottom-0 top-0 left-0 m-auto prevButton w-12" title="Précédent">
 
-    <img (click)="next()" src="../../../assets/next.svg" alt="Suivant image" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
+    <img (click)="next('message2', 'message3')" src="../../../assets/next.svg" alt="Suivant image" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
     
     <!-- <div class="flew flex-row items-center">
         <img src="../../../assets/previous.svg" alt="Précédent" width="50px" class="inline" title="Précédent" id="previousImg" (click)="previous()">
@@ -95,39 +134,92 @@
   </div>
 </div>
 
-  <div id="message2" style="display: none;" class="left-0 right-0 top-0 bottom-0 lg:w-2/3 w-3/4 z-50 m-auto lg:pr-12 pr-8 pl-8 lg:pl-12 rounded-lg text-slate-800">
+  <div id="message3" style="display: none;">
     <div class="message_container">
-          <h2 class="lg:text-xl text-base font-bold mb-2 uppercase">Défis <img src="../../assets/internet.svg" alt="Internet" height="30px" width="30px" class="inline">
-            pour passer au niveau suivant</h2>
+      <h2 class="lg:text-xl text-base font-bold mb-6 uppercase mt-4"><img src="../../assets/crossed-swords.svg" alt="Avion" height="30px" width="30px" class="inline mr-1"> Défis
+        pour passer au niveau suivant !</h2>
 
-          <div class="div_defi">
-            <img class="w-8"  src="../../../assets/check.svg">
-            <span class="ml-8">- - - Respecter la limite journalière pendant une journée</span>
+        <div class="flex flex-row w-full items-center mb-4">
+          <div class="basis-1/6 flex flex-row-reverse justify-center">
+            <span class="text-lg mr-2 font-semibold">Débutant</span>
+            <img src="../../assets/medal-debutant.svg" width="30px" height="30px">
           </div>
-          <div class="div_defi">
-            <img class="w-6"  src="../../../assets/cross.svg">
-            <span class="ml-10">- - - Respecter la limite journalière pendant une semaine</span>
+          <div class="basis-4/6 bg-gray-200 rounded-full dark:bg-gray-700">
+            <div class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: 20%"> 20%</div>
           </div>
-          <div class="div_defi">
-            <img class="w-6"  src="../../../assets/cross.svg">
-            <span class="ml-10">- - - Fixer la qualité maximum des vidéos à 720p</span>
+          <div class="basis-1/6 flex flex-row-r justify-center">
+            <span class="text-lg mr-2 font-semibold">Apprenti</span>
+            <img src="../../assets/medal-apprenti.svg" width="30px" height="30px">
           </div>
-          <div class="div_defi">
-            <img class="w-6"  src="../../../assets/cross.svg">
-            <span class="ml-10">- - - Inviter un ami</span>
-          </div>
-          <div class="div_defi">
-            <img class="w-6"  src="../../../assets/cross.svg">
-            <span class="ml-10">- - - Répondre bon au questionnaire</span>
-          </div>
-  
-  
-      <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-12"><img src="../../../assets/close.svg"></button>
-  
-  
-      <img (click)="next()" src="../../../assets/next.svg" alt="Suivant" class="absolute right-0 bottom-0 top-0 left-0 m-auto nextButton w-12" title="Suivant">
+        </div>
 
-      <img (click)="next()" src="../../../assets/previous.svg" alt="Précédent" class="absolute left-0 bottom-0 top-0 left-0 m-auto prevButton w-12" title="Précédent">
+
+        <div class="h-full w-full overflow-auto">
+          <fieldset class="w-full mb-4">
+            <legend class="font-bold text-xl mb-2">GLOBAL</legend>
+
+            <div class="div_defi">
+              <img class="w-8"  src="../../../assets/check.svg">
+              <span class="ml-8">- - - Démarrer les activités sur au moins une catégorie</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Respecter la limite journalière pendant une journée et valider la</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Respecter la limite journalière pendant une semaine et valider la</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Ajouter un ami</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Répondre bon au questionnaire</span>
+            </div>
+            </fieldset>
+
+            <fieldset class="w-full mb-4">
+            <legend class="font-bold text-xl mb-2"><img src="../../assets/internet.svg" alt="Internet" height="30px" width="30px" class="inline"> INTERNET</legend>
+
+            <div class="div_defi">
+              <img class="w-8"  src="../../../assets/check.svg">
+              <span class="ml-8">- - - Respecter la limite journalière pendant une journée</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Respecter la limite journalière pendant une semaine</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Fixer la qualité maximum des vidéos à 720p</span>
+            </div>
+            </fieldset>
+
+            <fieldset class="w-full mb-4">
+            <legend class="font-bold text-xl mb-2"><img src="../../assets/shopping.svg" alt="Achats" height="30px" width="30px" class="inline"> ACHATS</legend>
+
+            <div class="div_defi">
+              <img class="w-8"  src="../../../assets/check.svg">
+              <span class="ml-8">- - - Respecter la limite journalière pendant une journée</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Respecter la limite journalière pendant une semaine</span>
+            </div>
+            <div class="div_defi">
+              <img class="w-6"  src="../../../assets/cross.svg">
+              <span class="ml-10">- - - Ajouter minimum 20 produits en une semaine</span>
+            </div>
+            </fieldset>     
+        </div>
+
+
+
+      <button (click)="closeMessageOverlay()" id="close_button" class="absolute bottom-0 left-0 right-0 m-auto w-14"><img src="../../../assets/close.svg"></button>
+
+      <img (click)="previous('message3', 'message2')" src="../../../assets/previous.svg" alt="Précédent" class="absolute left-0 bottom-0 top-0 left-0 m-auto prevButton w-12" title="Précédent">
   
     </div>
 </div>

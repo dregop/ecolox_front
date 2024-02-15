@@ -1,0 +1,65 @@
+.line {                         
+    fill: none;                 
+    stroke: url(#line-gradient);    
+    stroke-width: 2px;          
+}
+
+#chart {
+    height: 92vh;
+    display: inline-block;
+	vertical-align: middle; 
+	overflow: hidden;
+}
+
+.y-axis-label {
+    fill: black;
+    font-size: 1.4em;
+    text-anchor: middle;
+    transform: rotate(-90deg);
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    padding: 5em 1em;
+    font-family: sans-serif;
+}
+
+.dotted {
+    stroke: #5c5c5c;
+    stroke-dasharray: 1 1;
+    fill: none;
+}
+
+.tooltip {
+    opacity: 0;
+    position: absolute;
+    top: -14px;
+    left: 0;
+    padding: 0.6em 1em;
+    background: #d6d3d1;
+    text-align: center;
+    line-height: 1.4em;
+    font-size: 0.9em;
+    box-shadow: 0px 1px 25px #b3b3b2;
+    z-index: 10;
+    transition: all 0.1s ease-out;
+    pointer-events: none;
+    height: 200px;
+    width: 250px;
+    &-origin {
+        word-break: break-all;        
+    }
+}
+
+//.tooltip-origin {
+//    word-break: break-all;
+//}
+
+.btn-graph {
+    @apply rounded-lg border-2 border-slate-400 p-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
+}
+
+.activated  {
+    @apply rounded-lg border-2 border-lime-400 p-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
+}

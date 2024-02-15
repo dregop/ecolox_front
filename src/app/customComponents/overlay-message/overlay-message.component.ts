@@ -80,12 +80,12 @@ export class OverlayMessageComponent implements OnInit {
     }
   }
 
-  public next() {
-      const message1 = document.getElementById('message');
-      const message2 = document.getElementById('message2');
+  public next(current: string, next: string) {
+      const message1 = document.getElementById(current);
+      const message2 = document.getElementById(next);
 
       if (message1 && message2) {
-        message1.style.display = 'block';
+        message1.style.display = 'none';
         message2.style.display = 'block';
       }
   }
@@ -122,9 +122,9 @@ export class OverlayMessageComponent implements OnInit {
     }
   }
 
-  public previous(): void {
-    const message1 = document.getElementById('message');
-    const message2 = document.getElementById('message2');
+  public previous(current: string, previous: string): void {
+    const message1 = document.getElementById(previous);
+    const message2 = document.getElementById(current);
 
     if (message1 && message2) {
       message1.style.display = 'block';

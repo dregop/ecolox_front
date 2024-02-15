@@ -20,16 +20,16 @@ input {
     border: 1px solid #eee;
 }
 
-#message, #message2 {
-    position: absolute;
-    background-image: url("../../../assets/background-overlay-2.png");
-    background-size: contain;
-    max-height: 240px;
-    background-repeat: repeat-y;
+#message, #message2, #message3 {
+    @apply absolute left-0 right-0 top-0 bottom-0 lg:w-2/3 w-3/4 z-50 m-auto pr-4 pl-4 rounded-lg text-slate-800 bg-slate-300 lg:h-1/2 h-2/3 border-4 border-slate-700 flex flex-col;
+    // background-image: url("../../../assets/background-overlay-2.png");
+    // background-size: contain;
+    // max-height: 240px;
+    // background-repeat: repeat-y;
 }
 
 .div_defi {
-    @apply flex flex-row items-center mb-2 p-2 border-2 border-slate-400 font-semibold
+    @apply w-full flex flex-row items-center mb-2 p-2 border-2 border-slate-400 font-semibold;
 }
 
 .div_defi:hover {
@@ -40,46 +40,41 @@ input {
     cursor: pointer;
 }
 
+.nextButton:hover, .prevButton:hover {
+    cursor: pointer;
+}
+
 #close_button {
     margin-bottom:-60px;
 }
 
 .nextButton {
-    margin-right: -40px;
+    margin-right: -60px;
 }
 
 .prevButton {
-    margin-left: -40px;
+    margin-left: -60px;
 }
 
 .message_container {
-    width: 100%;
-    text-align: center;
-    padding-left: 20px;
-    padding-right: 20px;
-    max-height: 240px;
-    overflow: auto;
-}
-@media screen and (min-width: 576px) {
-    .message_container {
-        max-height: 300px;
-        overflow: auto;
-    }
-    #message, #message2 {
-        max-height: 300px;
-    }
-}
-@media screen and (min-width: 1400px) {
-    .message_container {
-        overflow:hidden;
-        max-height:700px;
-    }
-    #message, #message2 {
-        max-height: 300px;
-    }
-    
+    @apply text-left h-full flex flex-col items-center;
 }
 
-.top_overlay {
-    margin-top: -15px;
-}
+// @media screen and (min-width: 576px) {
+//     .message_container {
+//         max-height: 300px;
+//         overflow: auto;
+//     }
+//     #message, #message2 {
+//         max-height: 300px;
+//     }
+// }
+// @media screen and (min-width: 1400px) {
+//     .message_container {
+//         overflow:hidden;
+//         max-height:700px;
+//     }
+//     #message, #message2 {
+//         max-height: 300px;
+//     }
+// }

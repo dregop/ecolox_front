@@ -1,11 +1,11 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { Co2ByOriginByTime } from '../chart.component';
-import { Line } from '../../models/line';
+import { Co2ByOriginByTime } from '../internet.component';
 import { GraphService } from '../services/graph.service';
 import { ToastService, toastType } from 'src/app/services/toast.service';
 import { UserFeatures } from 'src/app/models/userFeatures';
 import { UserService } from 'src/app/services/user.service';
+import { Line } from 'src/app/models/line';
 
 @Component({
   selector: 'line-chart',
@@ -36,6 +36,7 @@ export class LineChartComponent implements OnInit {
   public daysOfWeek!: HTMLCollection;
   public dayOfWeekNames = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
   public mainLine!: Line;
+  public globalLine!: Line;
   public currentSelectedDayOfWeek = new Date().getDay();
   public currentSelectedDayOfMonth = new Date().getDate();
   public currentSelectedMonth = new Date().getMonth();
@@ -154,14 +155,10 @@ export class LineChartComponent implements OnInit {
     globalDataButton?.addEventListener('click', () => {
       if (globalDataButton.className.includes('activated')) {
         globalDataButton.className = 'btn-graph';
-        d3.select('.line.line_global_mean').style("opacity", 0);
-        d3.select('.circle_line_global_mean').style("opacity", 0);
-        d3.select('.image_line_global_mean').style("opacity", 0);
+        this.globalLine.hide();
       } else {
         globalDataButton.className = 'btn-graph activated';
-        d3.select('.line.line_global_mean').style("opacity", 1);
-        d3.select('.circle_line_global_mean').style("opacity", 1);
-        d3.select('.image_line_global_mean').style("opacity", 1);
+        this.globalLine.show();
       }
       this.updateChart();
     });
@@ -618,10 +615,10 @@ export class LineChartComponent implements OnInit {
     /// DRAW GLOBAL MEAN LINE
     if (this.dataGlobal && this.dataGlobal.length > 0) {
       this.dataGlobal = this.graphService.reducePointsCo2TimeSerie(this.dataGlobal);
-      const valueline2: Line = new Line('line_global_mean', this.dataGlobal,
+      this.globalLine = new Line('line_global_mean', this.dataGlobal,
       this.chartProps.x, this.chartProps.y, 'grey', d3.curveBundle.beta(0.40)); // define the line
-      valueline2.addToPath(this.glines); // add to path
-      this.valueslines.push(valueline2);
+      this.globalLine.addToPath(this.glines); // add to path
+      this.valueslines.push(this.globalLine);
     }
 
     // Add first line 
@@ -639,14 +636,14 @@ export class LineChartComponent implements OnInit {
     this.chartProps.height = height;
     this.chartProps.width = width;
 
-      svgBox.append('image')
-      .attr("class", "arrow")
-      .attr('xlink:href', "assets/arrow.png")
-      .attr('width', 14)
-      .attr('height', 14)
-      .attr('x', this.chartProps.width - 5)
-      .attr('opacity', '1')
-      .attr('y', this.chartProps.height - 7);
+    svgBox.append('image')
+    .attr("class", "arrow")
+    .attr('xlink:href', "assets/arrow.png")
+    .attr('width', 14)
+    .attr('height', 14)
+    .attr('x', this.chartProps.width - 5)
+    .attr('opacity', '1')
+    .attr('y', this.chartProps.height - 7);
 
     // Add the Y Axis
     const gy = svgBox.append('g')
@@ -676,9 +673,9 @@ export class LineChartComponent implements OnInit {
 
     // // Add treashold internet line
     this.dataThreshold = [{co2: this.thresholdCo2, date: this.dataDrawnCo2TimeSerie[0].date}, {co2: this.thresholdCo2, date: this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].date}];
+    console.log(this.thresholdCo2);
     let valueline_threshold_internet: Line = new Line('Seuil', this.dataThreshold, this.chartProps.x, this.chartProps.y, 'red'); // create ligne
     valueline_threshold_internet.addToPath(this.glines); // add to path
-    valueline_threshold_internet.addLineLabel(this.chartProps); // add treashold label
 
     this.valueslines.push(valueline_threshold_internet);
 
@@ -694,13 +691,12 @@ export class LineChartComponent implements OnInit {
     this.valueslines.forEach(line => {
       line.buildAvatar(this.chartProps);
       line.updateAvatarPosition(this.chartProps);
+      line.addLineLabel(this.chartProps, (line.data[line.data.length - 1].co2 / 1000).toFixed(1) + ' kgCo2e');
     });
 
 
     // by default we hide global data : 
-    d3.select('.line.line_global_mean').style("opacity", 0);
-    d3.select('.circle_line_global_mean').style("opacity", 0);
-    d3.select('.image_line_global_mean').style("opacity", 0);
+    this.globalLine.hide();
 
     // hide threshold internet too
     valueline_threshold_internet.hide();
@@ -755,22 +751,23 @@ export class LineChartComponent implements OnInit {
         case 'debutant':
           this.tonnes = 6;
           this.degres = 3.5;
-          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
+          threshold = Math.trunc((this.tonnes * 1000000) / 365) * 4 / 100;
           break;
         case 'apprenti':
           this.tonnes = 5;
           this.degres = 3;
-          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
+          threshold = Math.trunc((this.tonnes * 1000000) / 365) * 4 / 100;
           break;
         default:
           this.tonnes = 2;
           this.degres = 1.5;
-          threshold = Math.trunc((this.tonnes * 1000) / 365) * 4 / 100;
+          threshold = Math.trunc((this.tonnes * 1000000) / 365) * 4 / 100;
           break;
       }
     } else {
       threshold = 275;
     }
+    console.log(threshold);
     let diff_between_dataDrawn_minmax_date = this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].date - this.dataDrawnCo2TimeSerie[0].date;
     diff_between_dataDrawn_minmax_date /= (3.6e+6); // heures
     if (diff_between_dataDrawn_minmax_date < 24 && threshold) {
@@ -782,7 +779,10 @@ export class LineChartComponent implements OnInit {
     } else {
       this.thresholdCo2 = 100000;
     }
+    console.log(this.thresholdCo2);
     this.dataThreshold = [{co2: this.thresholdCo2, date: this.dataDrawnCo2TimeSerie[0].date}, {co2: this.thresholdCo2, date: this.dataDrawnCo2TimeSerie[this.dataDrawnCo2TimeSerie.length - 1].date}];
+
+    // update threshold data
     this.valueslines[2].data = this.dataThreshold;
 
     // SCALE ACCORDING TO UPDATED RANGE
@@ -792,11 +792,11 @@ export class LineChartComponent implements OnInit {
     if (treasholdButton?.className.includes('activated')) {
       sumAllData = [...this.dataThreshold];
     }
-    if (globalDataButton?.className.includes('activated')) {
-      this.dataGlobal.forEach((data) => {
-        sumAllData.push(data);
-      });
-    }
+    // if (globalDataButton?.className.includes('activated')) {
+    //   this.dataGlobal.forEach((data) => {
+    //     sumAllData.push(data);
+    //   });
+    // }
     this.dataDrawnCo2TimeSerie.forEach((data) => {
       sumAllData.push(data);
     });
@@ -833,7 +833,11 @@ export class LineChartComponent implements OnInit {
       }
       if (line.getLineLastPointPos(this.chartProps)) {
         line.updateAvatarPosition(this.chartProps);
-        line.updateLabelPosition(this.chartProps);
+        if (line.name === 'line1' || line.name === 'Seuil' || line.name == 'line_global_mean') {
+          line.updateLabel(this.chartProps, this.chartProps.x, this.chartProps.y, (line.data[line.data.length - 1].co2 / 1000).toFixed(1) + ' kgCo2e');
+        } else {
+          line.updateLabel(this.chartProps);
+        }
       }
     });
 

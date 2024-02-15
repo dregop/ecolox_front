@@ -11,6 +11,7 @@
 }
 #container {
     display: flex;
+    height: 100%;
 }
 legend {
     font-size: 1.8em;
@@ -26,7 +27,7 @@ legend {
 }
 
 .card {
-    height: 100px;
+    height: 150px;
     overflow: auto;
     border-bottom: 2px solid #e2e8f0;
 }
@@ -60,8 +61,16 @@ legend {
     @apply rounded-lg pr-2 pl-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
 }
 
-.activated  {
+.activated-weight  {
     @apply rounded-lg pr-2 pl-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
+}
+
+.btn-graph {
+    @apply rounded-lg border-2 border-slate-400 p-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
+}
+
+.activated  {
+    @apply rounded-lg border-2 border-lime-400 p-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
 }
 
 

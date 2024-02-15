@@ -1,8 +1,9 @@
 import { Injectable, NO_ERRORS_SCHEMA, OnInit } from '@angular/core';
 import * as d3 from 'd3';
-import { Line } from '../../models/line';
-import { Co2ByOriginByTime } from '../chart.component';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Product } from 'src/app/pages/shopping/shopping.component';
+import { Line } from 'src/app/models/line';
+import { Co2ByOriginByTime } from '../internet.component';
 
 @Injectable({
   providedIn: 'root'
@@ -122,10 +123,12 @@ export class GraphService {
   public scaleXYDomain(data: Co2ByOriginByTime[], x: any, y: any) {
     // Scale the range of the data
     let i = 0;
+    const margin_right = (data[data.length - 1].date - data[0].date) * 11 / 100;
+    console.log(margin_right);
     x.domain([
       d3.min(data, (d) => {
         if (d.date instanceof Date) {
-          return (d.date as Date).getTime();
+          return (new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate())).getTime();
         }
         else {
           return null;
@@ -133,14 +136,14 @@ export class GraphService {
       }),
       d3.max(data, (d) => {
         if (d.date instanceof Date) {
-          return (d.date as Date).getTime();
+          return (d.date as Date).getTime() + margin_right;
         }
         else {
           return null;
         }
       })]
     );
-    y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + d.co2/100; })]); // define the range of y axis
+    y.domain([d3.min(data, function (d) { return d.co2 }), d3.max(data, function (d) { return d.co2 + d.co2 * 5/100; })]); // define the range of y axis
       // i want y axis to start at the first value recorded not zéro so that it is nicer to see
   }
 
@@ -274,16 +277,16 @@ export class GraphService {
       // We only print the co2 emitted since the beginning of the currently showing range of x
       const gCo2 = closestYValue - _this.dataDrawnCo2TimeSerie[0].co2;
 
-      const kmByCar = Math.trunc(Math.round(1000 * gCo2 / _this.GESgCO2ForOneKmByCar) / 1000);
+      const kmByCar = Math.round(1000 * gCo2 / _this.GESgCO2ForOneKmByCar) / 1000;
       const chargedSmartphones = Math.round(gCo2 / _this.GESgCO2ForOneChargedSmartphone);
   
       const formatDate = _this.d3Locale.format("%-d %b %Y à %H:%M");
       _this.tooltip.select("#start_date").text('Du ' + formatDate(xAccessor(_this.dataDrawnCo2TimeSerie[0]) as unknown as Date));
       _this.tooltip.select("#date").text('Au ' + formatDate(closestXValue as unknown as Date));
       _this.tooltip.select("#origin").html('sur : ' + closestorigin);
-      _this.tooltip.select("#co2").html(gCo2 + ' gCO<sub>2</sub>e');
-      _this.tooltip.select("#kmByCar").html(kmByCar + 'Kms');
-      _this.tooltip.select("#chargedSmartphones").html(chargedSmartphones + ' charges');
+      _this.tooltip.select("#co2").html(gCo2.toFixed(2) + ' gCO<sub>2</sub>e');
+      _this.tooltip.select("#kmByCar").html(kmByCar.toFixed(1) + 'Kms');
+      _this.tooltip.select("#chargedSmartphones").html(chargedSmartphones.toFixed(1) + ' charges');
       
       const x = chartPropX(closestXValue) + chartProps.margin.left;
       const y = chartPropY(closestYValue) + chartProps.margin.top;
@@ -380,12 +383,12 @@ export class GraphService {
           line.update(chartProps.svgBox, this.xz, this.yz,);
         }
         line.updateAvatarPosition(chartProps, this.xz, this.yz);
-        line.updateLabelPosition(chartProps, this.xz, this.yz);
+        line.updateLabel(chartProps, this.xz, this.yz);
       });
     }
   }
 
-  public fillIndicators(dataSum: Co2ByOriginByTime[]): void {
+  public fillIndicators(dataSum: any[]): void {
     const co2_max = document.getElementById('co2_max');
     const kmByCar_max = document.getElementById('kmByCar_max');
     const chargedSmartphones_max = document.getElementById('chargedSmartphones_max');
@@ -396,7 +399,6 @@ export class GraphService {
       if (co2_max) {
         co2_max.innerHTML = (dataSum[dataSum.length - 2].co2 as unknown as string) + ' gCO<sub>2</sub>e';
       }
-
     
       if (kmByCar_max) {
         const kmByCar = Math.trunc(Math.round(1000 * dataSum[dataSum.length - 2].co2 / this.GESgCO2ForOneKmByCar) / 1000);

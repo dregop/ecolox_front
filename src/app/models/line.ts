@@ -1,9 +1,9 @@
 import * as d3 from "d3";
-import { Co2ByOriginByTime } from "../chart/chart.component";
+import { Co2ByOriginByTime } from "../pages/internet/internet.component";
 
 export class Line {
     public name: string;
-    public data: Co2ByOriginByTime[];
+    public data: any[];
     public color: string;
     private category?: string;
     private xChartProps: any;
@@ -11,7 +11,7 @@ export class Line {
     private lineValues: any;
     private areaGradient: any;
 
-    constructor(name: string, data: Co2ByOriginByTime[], xChartProps: any, yChartProps: any, color: string, curveType?: d3.CurveFactory | d3.CurveBundleFactory, category?: string) {
+    constructor(name: string, data: any[], xChartProps: any, yChartProps: any, color: string, curveType?: d3.CurveFactory | d3.CurveBundleFactory, category?: string) {
         this.name = name;
         this.data = data;
         this.color = color;
@@ -22,9 +22,9 @@ export class Line {
     }
 
     // given the data and x, y it defines a line with a certain type of curve
-    public define(data: Co2ByOriginByTime[], x: any, y: any, curveType?: d3.CurveFactory | d3.CurveBundleFactory): any {
+    public define(data: any[], x: any, y: any, curveType?: d3.CurveFactory | d3.CurveBundleFactory): any {
         let curve = curveType === undefined ? d3.curveMonotoneX : curveType;
-        return d3.line<Co2ByOriginByTime>().curve(curve)
+        return d3.line<any>().curve(curve)
             .x(function (d) {
                 if (d.date instanceof Date) {
                 return x(d.date.getTime());
@@ -38,7 +38,7 @@ export class Line {
         .attr('class', 'line ' + this.name)
         .style('stroke', this.color)
         .style('fill', 'none')
-        .style("stroke-width", 2)
+        .style("stroke-width", 3)
         .attr('d', this.lineValues);
     }
 
@@ -52,7 +52,7 @@ export class Line {
         this.areaGradient.append("stop")
         .attr("offset", "0%")
         .attr("stop-color", this.color)
-        .attr("stop-opacity", 0.3);
+        .attr("stop-opacity", 0.1);
         this.areaGradient.append("stop")
         .attr("offset", "120%")
         .attr("stop-color", "white")
@@ -68,8 +68,8 @@ export class Line {
     }
 
     public getLineLastPointPos(chartProps: any, xz?: any, yz?: any) {
-        const yAccessor = (d: Co2ByOriginByTime) => d.co2;
-        const xAccessor = (d: Co2ByOriginByTime) => d.date;
+        const yAccessor = (d: any) => d.co2;
+        const xAccessor = (d: any) => d.date;
     
         let xLastPos;
         let yLastPos;
@@ -112,22 +112,27 @@ export class Line {
         .attr("y", avatarPos.y - 13);
     }
 
-    public addLineLabel(chartProps: any) {
+    public addLineLabel(chartProps: any, optionalLabel?: string) {
+        const label = optionalLabel ? optionalLabel : this.name;
         const labelPos = this.getLineLastPointPos(chartProps);
         chartProps.svgBox.append("text")
         .attr("class", 'line_label_' + this.name)
         .attr("x", labelPos.x - 10)
-        .attr("y", labelPos.y + 5)
-        .style("font-size", "12px")
+        .attr("y", labelPos.y - 30)
+        .style("font-size", "15px")
+        .style("font-weight", "500")
+        .style("fill", "#334155")
         .attr("dy", ".75em")
-        .text(this.name);
+        .text(label);
     }
 
-    public updateLabelPosition(chartProps: any, xz?: any, yz?: any) {
+    public updateLabel(chartProps: any, xz?: any, yz?: any, optionalLabel?: string) {
+        const label = optionalLabel ? optionalLabel : this.name;
         const labelPos = this.getLineLastPointPos(chartProps, xz, yz);
         chartProps.svgBox.select('.line_label_' + this.name)
-        .attr("x", labelPos.x - 50)
-        .attr("y", labelPos.y + 5);
+        .attr("x", labelPos.x - 10)
+        .attr("y", labelPos.y - 30)
+        .text(label);;
     }
 
     public hide() {

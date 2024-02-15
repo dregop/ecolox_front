@@ -1,0 +1,111 @@
+<div class="flex flex-row mt-1">
+    <div #chart id="chart" class="basis-10/12">
+        <div id="tooltip" class="tooltip w-72">
+            <div class="tooltip-date flex flex-col">
+                <span id="start_date"></span>
+                <span id="date"></span>
+            </div>
+            <div class="tooltip-origin">
+                <span id="origin"></span>
+            </div>
+            <div class="tooltip-co2" class="flex flex-row items-center w-4/5 mt-2 m-auto text-base">
+                <img src="../../assets/co2.svg" height="50px" width="50px" alt="Co2" class="mr-1"/>
+           <span id="co2" class="text-red-500"></span><span class="ml-1"> émis</span>
+            </div>
+            <span class="underline underline-offset-2">Equivaut à : </span>
+            <div class="flex flex-row mt-2">
+                <div class="basis-1/2 flex flex-row items-center">
+                    <img src="../../assets/car.svg" width="35px" height="35px" alt="Voiture" class="mr-2"/>
+                    <span id="kmByCar"></span>
+                </div>
+                <div class="basis-1/2 flex flex-row items-center">
+                    <img src="../../assets/phone.svg" width="38px" height="38px" alt="Smartphones"/>
+                    <span id="chargedSmartphones"></span>
+                </div>
+    </div>
+    
+        </div>
+        <div id="no_data" class="w-full h-full border-2 bg-slate-300 opacity-70 flex flex-row">
+            <div class="w-1/3 border-r-2 border-indigo-300 text-center pt-32 text-slate-900 p-8">
+                <div class="shadow-xl p-4 border-t-2 border-stone-400">
+                    <p>Pour bénificier de ce service vous devez installer l'extension Ecobuddy :</p>
+                    <a *ngIf="browserName !== 'Firefox'" href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" title="Eco Buddy Extension">
+                        <img src="../../../assets/chrome-icon.svg" width="50" height="50" alt="Chrome Icon"  class="inline m-4"/>
+                    </a>
+                    <a *ngIf="browserName == 'Firefox'" href="https://addons.mozilla.org/fr/firefox/addon/ecobuddy/" title="Eco Buddy Extension">
+                        <img src="../../../assets/firefox-icon.svg" width="50" height="50" alt="Firefox Icon"  class="inline m-4"/>
+                    </a>
+                </div>
+            </div>
+            <div class="w-2/3 text-center pt-32 p-8">
+                <div class="shadow-xl p-4 border-t-2 border-stone-400">
+                    <p class="">
+                        <loader></loader><br><br>
+                        <img src="../../../assets/internet.svg" width="50" height="50" alt="Internet Logo" class="inline">
+                        <br>
+                        Partez surfer sur la vague d'internet et revenez plus tard pour voir votre évolution.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="filters" class="absolute right-0 p-2 flex flex-col top-24 text-right h-4/5 overflow-auto">
+        <div>
+            <button class="btn-graph" id="zoomButton" title="Zoomer">
+                <img src="../../assets/zoom.svg" alt="Zoom" width="25px" height="25px">
+            </button>
+            <button class="btn-graph" id="global_data" title="Données moyennes de tous les utilisateurs">
+                <img src="../../assets/earth.svg" width="25px" height="25px" alt="Bouton moyenne globale">
+            </button>
+            <button class="btn-graph" id="treashold">
+                <img src="../../../assets/avatar_Seuil.png" width="25px" height="25px" alt="Seuil à ne pas dépasser" title="Seuil à ne pas dépasser">
+            </button>
+            <!-- <button class="btn-graph" id="personal_average">
+                <img src="../../../assets/average.svg" width="25px" height="25px" alt="Moyenne personnelle" title="Moyenne personnelle">
+            </button> -->
+        </div>
+        <div class="text-sm lg:mb-4 text-orange-400" *ngIf="isDayButtonActivated()">
+            <input type="checkbox" class="days_of_week" name="monday" />
+            <label for="monday" class="text-red-400">Lundi</label><br>
+            <input type="checkbox" class="days_of_week" name="tuesday" />
+            <label for="tuesday" class="text-slate-400">mardi</label><br>
+            <input type="checkbox" class="days_of_week" name="wednesday" />
+            <label for="wednesday" class="text-lime-400">Mercredi</label><br>
+            <input type="checkbox" class="days_of_week" name="thursday" />
+            <label for="thursday" class="text-cyan-400">Jeudi</label><br>
+            <input type="checkbox" class="days_of_week" name="friday"/>
+            <label for="friday" class="text-indigo-400">Vendredi</label><br>
+            <input type="checkbox" class="days_of_week" name="saturday" />
+            <label for="saturday" class="text-purple-400">Samedi</label><br>
+            <input type="checkbox" class="days_of_week" name="sunday" />
+            <label for="sunday" class="text-rose-400">Dimanche</label>
+        </div>
+        <div id="date-filters">
+            <div class="items-center flex flex">
+                <button class="btn-graph" id="left-button-day" title="Jour d'avant"><img src="../../../assets/left.svg" alt="Gauche" width="15px"></button>
+                <button class="btn-graph" id="day" title="Données du jour">Jour</button>
+                <button class="btn-graph" id="right-button-day" title="Jour d'avant"><img src="../../../assets/right.svg" alt="Gauche" width="15px"></button>
+            </div>
+            <div class="items-center flex flex">
+                <!-- <button class="btn-graph" id="left-button-week" title="Jour d'avant"><img src="../../../assets/left.svg" alt="Gauche" width="15px"></button> -->
+                <button class="btn-graph" id="week" title="Données de la semaine">Semaine</button>
+                <!-- <button class="btn-graph" id="right-button-week" title="Jour d'avant"><img src="../../../assets/right.svg" alt="Gauche" width="15px"></button> -->
+            </div>
+            <div class="items-center flex flex">
+                <!-- <button class="btn-graph" id="left-button-month" title="Jour d'avant"><img src="../../../assets/left.svg" alt="Gauche" width="15px"></button> -->
+                <button class="btn-graph" id="month" title="Données du mois">Mois</button>
+                <!-- <button class="btn-graph" id="right-button-month" title="Jour d'avant"><img src="../../../assets/right.svg" alt="Gauche" width="15px"></button> -->
+            </div>
+            <div class="items-center flex flex">
+                <!-- <button class="btn-graph" id="left-button-year" title="Jour d'avant"><img src="../../../assets/left.svg" alt="Gauche" width="15px"></button> -->
+                <button class="btn-graph activated" id="all" title="Données depuis le début de l'année">Année</button>
+                <!-- <button class="btn-graph" id="right-button-year" title="Jour d'avant"><img src="../../../assets/right.svg" alt="Gauche" width="15px"></button> -->
+            </div>
+
+            
+        </div>
+        <div class="text-left">
+            <toggle-button [buttonName]="'FILTRES'" [classNameToToggle]="'btn-graph'"></toggle-button>
+        </div>
+    </div>   
+</div>

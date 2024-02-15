@@ -1,1 +1,87 @@
-<router-outlet></router-outlet>
+<ng-container *ngIf="isAuthenticated; else unAuthenticated" >
+  
+    <div id="message_overlay" class="absolute w-full h-full bg-slate-800 opacity-30 z-40" *ngIf="getStorageDisplayFirstMessage">
+    </div>
+    <div id="first_message" class="absolute top-1/4 left-0 right-0 bottom-0 lg:w-1/2 w-3/4 z-50 p-4 pl-10 m-auto" *ngIf="getStorageDisplayFirstMessage">
+      <div class="w-full text-center rounded-lg bg-white shadow-2xl border-2 border-slate-300 p-8 text-slate-800">
+        <span class="text-sm font-semibold">Tu peux partir naviguer sur des sites comme Twitch (pour mes amis les gamers) ou Netflix par exemple et reviens voir les résultats après !</span><br>
+        <input class="mt-4" type="checkbox" id="dont_show" name="dont_show" />
+        <label class="text-sm ml-1" for="dont_show">ne plus afficher ce message</label>
+    
+        <img class="absolute top-0 left-0 border-4 rounded-full" src="../../assets/buddy.png" width="80">
+        <button class="absolute top-0 right-0" (click)="closeMessageOverlay()" id="close_message_button"><img src="../../../assets/close.svg" width="40"></button>
+      </div>
+    </div>
+  
+  
+    <div id="banner">
+      <app-banner></app-banner>
+    </div>
+    <div id="container">
+        <div id="menu">
+            <app-menu></app-menu>
+        </div>
+        <div id="main">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+  
+  </ng-container>
+  
+  
+  <ng-template #unAuthenticated>
+  
+    <div class="flex lg:flex-row flex-col items-center pl-8 pr-8">
+      <div class="basis-1/2 lg:mr-10 text-lg">
+        <img src="../assets/ecobuddy_logo.svg" alt="Logo Eco Buddy" class="lg:w-3/5 w-4/5 m-auto mt-1"/>
+        <p class="text-justify">
+          Eco Buddy, le site pour suivre en temps réel ses émissions de Co<sub>2</sub>e (c-a-d l'ensemble des gaz à effet de serre émis, rapporté à la pollution du Co<sub>2</sub>
+          <a href="https://fr.wikipedia.org/wiki/%C3%89quivalent_CO2" title="Définition Wikipédia"><img style="width: 20px;display: inline;" src="../assets/info-icon.svg" alt="Définition Wikipédia"/></a>).
+          <br><br>
+          Vous n'avez <span class="line-through">quasi</span> rien à faire, on s'occupe de tout ! <br>
+          Installez l'extension pour votre navigateur et inscrivez vous pour commencer l'aventure : <br><br>
+        </p>
+        <p class="text-center">
+          <a href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" title="Eco Buddy Extension" class="bg-amber-500 p-2 rounded text-white text-lg font-semibold ">Télécharger sur Chrome Web Store</a>
+        </p>
+        <p class="text-center mt-4">
+          <a href="https://addons.mozilla.org/fr/firefox/addon/ecobuddy/" title="Eco Buddy Extension" class="bg-amber-500 p-2 rounded text-white text-lg font-semibold ">Télécharger sur Firefox Store</a>
+        </p>
+  
+      </div>
+      <div class="basis-1/2 lg:mt-20 bg-stone-300 rounded-lg m-4 shadow-2xl border-2 border-slate-200 ">
+        <form [formGroup]="loginForm">
+          <fieldset class="border-2 p-4 rounded-lg m-2">
+            <legend>Connexion</legend>
+            <input type="email" formControlName="email" placeholder="Email"/>
+            <input type="password" formControlName="password" placeholder="Mot de passe"/>
+            <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 text-lg hover:bg-amber-400 active:bg-amber-500 shadow-2xl" (click)="login()">Connexion</button>
+            <a href="#" class="text-sm ml-10 underline" (click)="forgotPassword()">Mot de passe oublié</a>
+          </fieldset>
+        </form>
+      
+        <form [formGroup]="signUpForm">
+          <fieldset class="border-2 p-4 rounded-lg m-2">
+            <legend>Inscription</legend>
+            <input type="email" formControlName="email" placeholder="Email"/>
+            <input type="text" formControlName="login" placeholder="Pseudo"/>
+            <input type="password" formControlName="password" placeholder="Mot de passe"/>
+            <button class="rounded-lg border-2 border-amber-400 p-1 m-1 bg-amber-300 hover:bg-amber-400 active:bg-amber-500 text-lg shadow-2xl" (click)="signUp()">Inscription</button>
+          </fieldset>
+        </form>
+       </div>
+    </div>
+    <div class="fixed bottom-0 text-xs text-center w-full m-auto">
+      <a routerLink="/mentions-legales" class="">Mentions Légales</a>
+  </div>
+  
+  </ng-template>
+  
+  
+  <div id="toast">
+    <span>{{ toastService.toastMessage }}</span>
+  </div>
+
+<div class="absolute top-3/4 right-1/3" id="cloud"></div>
+<div class="absolute top-2/3 right-2/3" id="cloud2"></div>
+<img class="absolute bottom-0 m-auto left-0 right-0 opacity-90" id="earth" width="600" height="150" src="../../assets/background-earth.png">
