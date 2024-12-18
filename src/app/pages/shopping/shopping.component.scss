@@ -1,33 +1,14 @@
-#menu {
-    width: 10%;
-    height: 90vh;
-    z-index: 60;
-    margin-left: -13px;
-}
-#main {
-    margin-left: 4%;
-    width: 86%;
-    height:85vh;
-}
-#container {
-    display: flex;
-    height: 100%;
-}
-legend {
-    font-size: 1.8em;
-    color: rgb(56, 56, 56);
-}
 
 .category {
-    @apply flex flex-col border-2 rounded p-2 items-center basis-1/6 mr-4 mt-2
+    @apply flex flex-col border-2 rounded p-2 items-center mr-4 mt-2 text-xs shrink basis-1/6
 }
 
 .category_activated {
-    @apply flex flex-col border-2 rounded border-indigo-300 p-2 items-center basis-1/6 mr-4 mt-2
+    @apply flex flex-col border-2 rounded border-indigo-300 p-2 items-center mr-4 mt-2 text-xs shrink basis-1/6
 }
 
 .card {
-    height: 150px;
+    height: 11vh;
     overflow: auto;
     border-bottom: 2px solid #e2e8f0;
 }
@@ -44,19 +25,6 @@ legend {
     cursor: pointer;
 }
 
-#addProductButton {
-    margin-bottom: -60px;
-    background-image: url("../../../assets/background-overlay-2.png");
-    background-size: contain;
-    background-repeat: repeat-y;
-}
-
-#add_product {
-    background-image: url("../../../assets/background-overlay-2.png");
-    background-size: contain;
-    background-repeat: repeat-y;
-}
-
 .btn-weight {
     @apply rounded-lg pr-2 pl-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
 }
@@ -65,7 +33,7 @@ legend {
     @apply rounded-lg pr-2 pl-2 m-1 mb-2 bg-lime-300 hover:bg-slate-200 active:bg-slate-300
 }
 
-.btn-graph {
+.btn-menu-graph {
     @apply rounded-lg border-2 border-slate-400 p-2 m-1 mb-2 bg-slate-100 hover:bg-lime-200 active:bg-lime-300
 }
 

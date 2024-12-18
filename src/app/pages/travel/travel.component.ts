@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./travel.component.scss']
 })
 export class TravelComponent implements OnInit {
-
+  
   ngOnInit(): void {
 
     const x = document.getElementById("demo");
@@ -18,7 +18,7 @@ export class TravelComponent implements OnInit {
 
       if (x) {
         if (navigator.geolocation) {
-          navigator.geolocation.watchPosition(showPosition, error, options);
+          navigator.geolocation.watchPosition(firstGeolocationSuccess, error, options);
         } else {
           x.innerHTML = "Geolocation is not supported by this browser.";
         }
@@ -58,7 +58,7 @@ export class TravelComponent implements OnInit {
       // From cletus' answer ends
     
       if (x) {
-        x.innerHTML = "speed: " + (distance / t2 - t1);
+        x.innerHTML = "speed: " + (distance / (t2 - t1));
       } else {
         console.log('error');
       }

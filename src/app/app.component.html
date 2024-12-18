@@ -41,7 +41,7 @@
           Vous n'avez <span class="line-through">quasi</span> rien à faire, on s'occupe de tout ! <br>
           Installez l'extension pour votre navigateur et inscrivez vous pour commencer l'aventure : <br><br>
         </p>
-        <p class="text-center">
+        <p class="text-center ">
           <a href="https://chrome.google.com/webstore/detail/ecobuddy/fobapffpfeacngdlddcjadfkaegidece" title="Eco Buddy Extension" class="bg-amber-500 p-2 rounded text-white text-lg font-semibold ">Télécharger sur Chrome Web Store</a>
         </p>
         <p class="text-center mt-4">
@@ -49,7 +49,7 @@
         </p>
   
       </div>
-      <div class="basis-1/2 lg:mt-20 bg-stone-300 rounded-lg m-4 shadow-2xl border-2 border-slate-200 ">
+      <div class="basis-1/2 lg:mt-20 bg-stone-300 rounded-lg m-4 shadow-2xl border-2 border-slate-200 z-50">
         <form [formGroup]="loginForm">
           <fieldset class="border-2 p-4 rounded-lg m-2">
             <legend>Connexion</legend>
@@ -82,6 +82,6 @@
     <span>{{ toastService.toastMessage }}</span>
   </div>
 
-<div class="absolute top-3/4 right-1/3" id="cloud"></div>
-<div class="absolute top-2/3 right-2/3" id="cloud2"></div>
-<img class="absolute bottom-0 m-auto left-0 right-0 opacity-90" id="earth" width="600" height="150" src="../../assets/background-earth.png">
+<div class="fixed top-3/4 right-1/3" id="cloud"></div>
+<div class="fixed top-2/3 right-2/3 opacity-30" id="cloud2"></div>
+<img class="fixed bottom-0 m-auto left-0 right-0 opacity-90" id="earth" width="600" height="150" src="../../assets/background-earth.png">
