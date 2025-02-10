@@ -48,11 +48,7 @@ export class AuthService {
     }
 
     signUp(email: string, login:string, password:string ) {
-        return this.http.post<any>(API_URL + '/signup', {email, login, password})
-        .pipe(
-            tap((res) => this.setSession(res)),
-            shareReplay() // prevent multiple http call
-          );
+        return this.http.post<any>(API_URL + '/signup', {email, login, password});
     }
 
     forgotPasswordSendEmail(email: string) {

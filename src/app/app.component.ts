@@ -129,16 +129,16 @@ export class AppComponent implements OnInit, AfterContentInit {
         this.authService.signUp(val.email, val.login, val.password)
             .subscribe({
               next: () => {
-                this.toastService.handleToast(toastType.Success, 'Bienvenue, installe toi et laisse faire l\'algorithme !');
+                this.toastService.handleToast(toastType.Success, `Bienvenue ${val.login}, nous t'enverrons un mail quand tout sera opérationnel`);
                 this.signUpForm.reset();
-                this.displayFirstMessage();
-                this.currentUser = new User(val.login);
-                this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
-                this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
-                this.userService.$isAuthenticated.next(this.isAuthenticated);
+                // this.displayFirstMessage();
+                // this.currentUser = new User(val.login);
+                // this.userService.$currentUser.next(this.currentUser); // propage currentUser value to all $currentUser subscibers
+                // this.isAuthenticated = this.authService.isLoggedIn(); // à changer ?
+                // this.userService.$isAuthenticated.next(this.isAuthenticated);
               },
               error: (error) => {
-                if (error.error) {
+                if (error.error.text) {
                   this.toastService.handleToast(toastType.Error, error.error.text);
                 } else {
                   this.toastService.handleToast(toastType.Error, 'Dommage ça marche pas !');
